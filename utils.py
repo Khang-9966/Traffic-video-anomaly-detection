@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import glob
 import torch
+import wandb
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def load_raw_groundtruth(data_type,groundtruth_dir=None):
@@ -95,7 +97,7 @@ class Loss_log():
     for name in loss_:
       self.inter_loss[name] = loss_[name]
   
-  def end_epoch(self, plot):
+  def end_epoch(self, plot , wandb_log):
     # mean
     for name in self.loss_name_list:
       self.epoch_loss[name].append(np.mean( self.inter_loss[name] ))
@@ -107,6 +109,11 @@ class Loss_log():
       fig , ax=plt.subplots( figsize=(20,5))
       for name in self.loss_name_list:
         ax.plot(epoch,self.epoch_loss[name],label=name)
+      
+      if wandb_log:
+        for name in self.loss_name_list:
+          wandb.log({ name : self.epoch_loss[name] } , step=int(len(epoch)))
+          
       legend = ax.legend(loc='upper left')
       # try:
       #   plt.show()

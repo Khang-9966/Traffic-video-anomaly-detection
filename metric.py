@@ -151,6 +151,7 @@ def full_assess_AUC(score_frame, frame_labels, w_img=0.5, w_flow=0.5, sequence_n
     auc, prc = basic_assess_AUC(scores_appe, frame_labels) if len(np.unique(frame_labels)) > 1 else [-1, -1]
     print('appearance PRscore:', ', '.join(('%.3f' % val) for val in prc))
     print('appearance AUCs:', ', '.join(('%.3f' % val) for val in auc))
+    appe_auc, appe_prc = auc, prc
     print("="*40)
     auc, prc = basic_assess_AUC(scores_flow, frame_labels) if len(np.unique(frame_labels)) > 1 else [-1, -1]
     print('optic flow PRscore:', ', '.join(('%.3f' % val) for val in prc))
@@ -172,7 +173,7 @@ def full_assess_AUC(score_frame, frame_labels, w_img=0.5, w_flow=0.5, sequence_n
         p, r, _ = precision_recall_curve(frame_labels, scores_appe[:, 3])
         pr = [p, r]
         print('mAP of appearance SSIM:', average_precision_score(frame_labels, scores_appe[:, 3]))
-    return scores_appe,scores_flow,scores_comb,scores_angle,scores_mag
+    return scores_appe,scores_flow,scores_comb,scores_angle,scores_mag, appe_auc, appe_prc
 
 
 def flip_scores(scores):

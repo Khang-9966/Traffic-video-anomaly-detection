@@ -4,9 +4,10 @@ from model import *
 from dataset import *
 import tqdm
 import argparse
+import wandb
+import time 
 
 parser = argparse.ArgumentParser(description="flownet anomaly detection")
-parser.add_argument('--gpus', nargs='+', type=str, help='gpus')
 parser.add_argument('--batch_size', type=int, default=32, help='batch size for training')
 parser.add_argument('--epochs', type=int, default=40, help='number of epochs for training')
 parser.add_argument('--h', type=int, default=128, help='height of input images')
@@ -23,9 +24,30 @@ parser.add_argument('--data_type', type=str, default='belleview', help='type of 
 parser.add_argument('--dataset_path', type=str, default='./dataset', help='directory of data')
 parser.add_argument('--exp_dir', type=str, default='log', help='directory of log')
 parser.add_argument('--groundtruth_path', type=str, default='', help='directory of ground truth ')
+parser.add_argument('--wandb_log', type=bool, default=False, help='Wandb ML ops monitor')
+parser.add_argument('--wandb_run_name', type=str, default="test", help='Wandb ML ops monitor wandb_run_name')
 
 
 args = parser.parse_args()
+
+
+if args.wandb_log:
+  wandb.init(project=args.data_type,  name = args.wandb_run_name, entity="khang-9966") # +"-"+str(time.ctime(int(time.time())) )
+
+  wandb.config = {
+    "batch_size": args.batch_size,
+    "epochs": args.epochs,
+    "h": args.h,
+    "w": args.w,
+    "g_lr": args.g_lr,
+    "d_lr": args.d_lr,
+    "fdim": args.fdim,
+    "mdim": args.mdim,
+    "im_msize": args.im_msize,
+    "flow_msize": args.flow_msize,
+    "data_type": args.data_type,
+    "exp_dir": args.exp_dir,
+  }
 
 NUM_TEMPORAL_FRAME = 2
 INDEX_STEP = 1
@@ -145,12 +167,16 @@ for epoch in range(num_epochs):
         train_log.add_inter_loss({
             'G_loss' : G_loss.item(), 'D_loss': D_loss.item(), 'opt_loss': loss_opt.item(), 'gradi_loss': loss_gradi.item()  , 'inten_loss': loss_inten.item() 
         })
- 
+
         iters += 1
       
     now_epoch = train_log.end_epoch(True)
     torch.save(generator.state_dict(), checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt")
     torch.save(discriminator.state_dict(), checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt")
+
+    if args.wandb_log:
+      wandb.log({"gen_dir": checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt", 
+                "dis_dir": checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt"}, step=now_epoch)
 
 p_keep = 1.0
 test_generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
@@ -167,3 +193,6 @@ for real_image,  real_flow  in Bar(train_loader):
 test_generator.eval()
 
 torch.save(test_generator.state_dict(), checkpoint_save_path+"/"+model_name+"_final_gen_"+str(now_epoch) +".pt")
+
+if args.wandb_log:
+  wandb.log({"final_model_dir": checkpoint_save_path+"/"+model_name+"_final_gen_"+str(now_epoch) +".pt"})

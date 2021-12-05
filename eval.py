@@ -6,9 +6,10 @@ from metric import *
 
 import tqdm
 import argparse
+import wandb
+import time
 
 parser = argparse.ArgumentParser(description="flownet anomaly detection")
-parser.add_argument('--gpus', nargs='+', type=str, help='gpus')
 parser.add_argument('--batch_size', type=int, default=32, help='batch size for training')
 parser.add_argument('--epochs', type=int, default=40, help='number of epochs for training')
 parser.add_argument('--h', type=int, default=128, help='height of input images')
@@ -26,9 +27,19 @@ parser.add_argument('--groundtruth_path', type=str, default='', help='directory 
 parser.add_argument('--eval_method', type=str, default='all', help=' all , normal , custom ')
 parser.add_argument('--mag_quantile', type=float, default=0.99, help=' mag cut for custom method ')
 parser.add_argument('--min_flow_weight', type=float, default=0.1, help=' min flow weight in custom method ')
+parser.add_argument('--wandb_log', type=bool, default=False, help='Wandb ML ops monitor')
+parser.add_argument('--wandb_run_name', type=str, default="test", help='Wandb ML ops monitor wandb_run_name')
 
 
 args = parser.parse_args()
+
+if args.wandb_log:
+  wandb.init(project=args.data_type, name = args.wandb_run_name, entity="khang-9966")
+
+  wandb.config.update ( {
+    "mag_quantile": args.mag_quantile,
+    "min_flow_weight": args.min_flow_weight,
+  } )
 
 NUM_TEMPORAL_FRAME = 2
 INDEX_STEP = 1
@@ -109,9 +120,15 @@ if args.eval_method == "all" or args.eval_method == "normal":
 
   sequence_n_frame = len(test_sample_video_frame_index)
 
-  scores_appe,scores_flow,scores_comb,scores_angle,scores_mag = full_assess_AUC(score_frame, labels_temp, w_img, w_flow, sequence_n_frame, True,
+  scores_appe,scores_flow,scores_comb,scores_angle,scores_mag, appe_auc, appe_prc = full_assess_AUC(score_frame, labels_temp, w_img, w_flow, sequence_n_frame, True,
                   True, None,
                   save_pr_appe_SSIM_epoch=True)
+  if args.wandb_log:
+    metric_list = ["PSNR_X","PSNR_inv","PSNR","SSIM","MSE","maxSE","std","MSE_1c","maxSE_1c","std_1c"]
+    for i in range(len(metric_list)):
+       wandb.log({ "Appearance AUC " + metric_list[i] : appe_auc[i]} )
+    for i in range(len(appe_prc)):
+       wandb.log({ "Appearance AP " + metric_list[i] : appe_prc[i]} )
 
 if args.eval_method == "all" or args.eval_method == "custom":
   STEP = 4
@@ -177,3 +194,10 @@ if args.eval_method == "all" or args.eval_method == "custom":
   print("Combine AUC: ",roc_auc_score(labels_temp, combine_max_score))
   print("Combine AP: ",average_precision_score(labels_temp, combine_max_score))
 
+  if args.wandb_log:
+    wandb.log({"Combine AUC": roc_auc_score(labels_temp, combine_max_score)})
+    wandb.log({"Combine AP": average_precision_score(labels_temp, combine_max_score) })
+    wandb.log({"Appearence AUC": roc_auc_score(labels_temp, max_app_mean)})
+    wandb.log({"Appearence AP": average_precision_score(labels_temp, max_app_mean) })
+    wandb.log({"Flow AUC": roc_auc_score(labels_temp, max_flow_mean)})
+    wandb.log({"Flow AP": average_precision_score(labels_temp, max_flow_mean) })

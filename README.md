@@ -2,7 +2,7 @@
 
 ## Dependencies
 * pip install barbar
-
+* pip install wandb
 ## Datasets
 * USCD Ped2 [[dataset]()]
 * CUHK Avenue [[dataset]()]
@@ -11,6 +11,12 @@
 * IDIAP [[dataset]()]
 * AIC [[dataset]()]
 
+
+## Wandb ML ops
+* Before run training
+```bash
+wandb login --cloud [KEY]
+```
 
 ## Training
 * Belleview
@@ -24,3 +30,5 @@ python train.py --dataset_path .. --data_type belleview --exp_dir "../save_model
 python eval.py  --dataset_path .. --data_type belleview --exp_dir "../save_model" --exp_dir "../save_model" --groundtruth_path "../Traffic-Belleview/"
 ```
 * Ped2
+
+

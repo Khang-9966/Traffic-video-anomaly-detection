@@ -50,6 +50,7 @@ if args.wandb_log:
             "im_msize": args.im_msize,
             "flow_msize": args.flow_msize,
             "data_type": args.data_type,
+            "wandb_run_name": args.wandb_run_name,
             "exp_dir": args.exp_dir,
             "mag_quantile": args.mag_quantile,
             "min_flow_weight": args.min_flow_weight,

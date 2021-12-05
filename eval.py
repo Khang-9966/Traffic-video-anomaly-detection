@@ -37,10 +37,10 @@ model_name = "original"
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 p_keep = 1.0
-test_generator = Generator(128,192,2,3,p_keep)
+test_generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
 test_generator = test_generator.to(device)
 
-test_generator.load_state_dict(torch.load( checkpoint_save_path+model_name+"_gen_"+str(args.epochs) +".pt"))
+test_generator.load_state_dict(torch.load( checkpoint_save_path+"/"+model_name+"_final_gen_"+str(args.epochs) +".pt"))
 
 test_generator.eval()
 

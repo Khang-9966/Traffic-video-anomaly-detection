@@ -153,7 +153,7 @@ for epoch in range(num_epochs):
     torch.save(discriminator.state_dict(), checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt")
 
 p_keep = 1.0
-test_generator = Generator(128,192,2,3,p_keep,p_keep,args.im_msize,args.flow_msize)
+test_generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
 test_generator = test_generator.to(device)
 test_generator.load_state_dict(generator.state_dict())
 

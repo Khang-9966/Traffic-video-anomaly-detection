@@ -111,7 +111,7 @@ class Loss_log():
       # try:
       #   plt.show()
       # except:
-      fig.savefig(self.checkpoint_save_path+"/epoch_"+str(epoch)+"_train_chart.png")
+      fig.savefig(self.checkpoint_save_path+"/epoch_"+str(len(epoch))+"_train_chart.png")
         
     return int(len(epoch))
 

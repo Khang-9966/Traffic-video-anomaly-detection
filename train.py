@@ -32,22 +32,23 @@ args = parser.parse_args()
 
 
 if args.wandb_log:
-  wandb.init(project=args.data_type,  name = args.wandb_run_name, entity="khang-9966") # +"-"+str(time.ctime(int(time.time())) )
-
-  wandb.config = {
-    "batchsize": args.batch_size,
-    "epochs": args.epochs,
-    "h": args.h,
-    "w": args.w,
-    "glr": args.g_lr,
-    "dlr": args.d_lr,
-    "fdim": args.fdim,
-    "mdim": args.mdim,
-    "im_msize": args.im_msize,
-    "flow_msize": args.flow_msize,
-    "data_type": args.data_type,
-    "exp_dir": args.exp_dir,
-  }
+  wandb.init(project=args.data_type,  name = args.wandb_run_name, 
+        entity="khang-9966",
+        config = {
+            "batchsize": args.batch_size,
+            "epochs": args.epochs,
+            "h": args.h,
+            "w": args.w,
+            "glr": args.g_lr,
+            "dlr": args.d_lr,
+            "fdim": args.fdim,
+            "mdim": args.mdim,
+            "im_msize": args.im_msize,
+            "flow_msize": args.flow_msize,
+            "data_type": args.data_type,
+            "exp_dir": args.exp_dir,
+          }
+        ) # +"-"+str(time.ctime(int(time.time())) )
 
 NUM_TEMPORAL_FRAME = 2
 INDEX_STEP = 1

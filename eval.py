@@ -34,7 +34,9 @@ parser.add_argument('--wandb_run_name', type=str, default="test", help='Wandb ML
 args = parser.parse_args()
 
 if args.wandb_log:
-  wandb.init(project=args.data_type, name = args.wandb_run_name, entity="khang-9966")
+  wandb.init(project=args.data_type, name = args.wandb_run_name, 
+       entity="khang-9966"
+       )
 
   wandb.config.update ( {
     "mag_quantile": args.mag_quantile,

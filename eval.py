@@ -52,6 +52,8 @@ test_generator.eval()
 
 raw_ground_truth = load_raw_groundtruth(data_type=DATASET_TYPE,groundtruth_dir=args.groundtruth_path)
 
+print("kkkk",len(raw_ground_truth))
+
 test_images , test_flows = load_raw_data(data_type=args.data_type,train_or_test="test",data_dir=args.dataset_path)
 
 test_sample_video_frame_index , test_index , labels_temp = get_index_sample_and_label(test_images,raw_ground_truth,DATASET_TYPE,INDEX_STEP,NUM_TEMPORAL_FRAME)

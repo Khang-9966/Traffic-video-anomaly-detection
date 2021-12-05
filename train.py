@@ -176,7 +176,7 @@ for epoch in range(num_epochs):
 
     if args.wandb_log:
       for name in train_log.loss_name_list:
-        wandb.log({ str(name) : 1 } )
+        wandb.log({ "str(name)" : float(train_log.epoch_loss[name][-1]) } )
         print(name)
         break
     #   wandb.log({"gen_dir": checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt", 

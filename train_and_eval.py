@@ -3,7 +3,7 @@ from utils import *
 from model import *
 from dataset import *
 from metric import *
-
+import os
 import tqdm
 import argparse
 import wandb
@@ -111,6 +111,10 @@ generator_optimizer = optim.Adam(generator.parameters(), lr=args.g_lr, betas = (
 train_log = Loss_log(['G_loss', 'D_loss', 'opt_loss', 'gradi_loss' , 'inten_loss' ],args.exp_dir)
 
 checkpoint_save_path = args.exp_dir +"/"+ args.data_type +"-"+ args.wandb_run_name +"/"
+
+if not os.path.exists(checkpoint_save_path):
+    os.makedirs(checkpoint_save_path)
+
 model_name = "original"
 # Training Loop
 # Lists to keep track of progress

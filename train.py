@@ -149,8 +149,8 @@ for epoch in range(num_epochs):
         iters += 1
       
     now_epoch = train_log.end_epoch(True)
-    torch.save(generator.state_dict(), checkpoint_save_path+model_name+"_gen_"+str(now_epoch) +".pt")
-    torch.save(discriminator.state_dict(), checkpoint_save_path+model_name+"_dis_"+ str(now_epoch)+".pt")
+    torch.save(generator.state_dict(), checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt")
+    torch.save(discriminator.state_dict(), checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt")
 
 p_keep = 1.0
 test_generator = Generator(128,192,2,3,p_keep,p_keep,args.im_msize,args.flow_msize)
@@ -166,4 +166,4 @@ for real_image,  real_flow  in Bar(train_loader):
 
 test_generator.eval()
 
-torch.save(test_generator.state_dict(), checkpoint_save_path+model_name+"_final_gen_"+str(now_epoch) +".pt")
+torch.save(test_generator.state_dict(), checkpoint_save_path+"/"+model_name+"_final_gen_"+str(now_epoch) +".pt")

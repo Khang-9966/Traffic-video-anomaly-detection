@@ -54,6 +54,7 @@ if args.wandb_log:
             "exp_dir": args.exp_dir,
             "mag_quantile": args.mag_quantile,
             "min_flow_weight": args.min_flow_weight,
+            "full_model_dir" : args.exp_dir +"/"+ args.data_type +"-"+ args.wandb_run_name +"/"
           }
         ) # +"-"+str(time.ctime(int(time.time())) )
 

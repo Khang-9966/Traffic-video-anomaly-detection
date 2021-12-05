@@ -153,7 +153,7 @@ def visualizing(real_image,output_appe,real_flow,output_opt,checkpoint_save_path
     # try:
     #   plt.show()
     # except:
-    fig.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"train_app_flow.png")
+    fig.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"_train_app_flow.png")
 
 def test_flow_vil(output_opt,real_flow,checkpoint_save_path,epoch):
   def scale_range(img):
@@ -168,5 +168,5 @@ def test_flow_vil(output_opt,real_flow,checkpoint_save_path,epoch):
   # try:
   #   plt.show()
   # except:
-  fig.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"train_flow.png")
+  fig.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"_train_flow.png")
 

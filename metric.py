@@ -6,6 +6,8 @@ from sklearn.metrics import roc_auc_score, average_precision_score, precision_re
 #from sklearn.utils.fixes import signature
 
 from skimage.metrics import structural_similarity as ssim
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 def calc_anomaly_score_one_frame(frame_true, frame_hat, flow_true, flow_hat, thresh_cut_off=[0, 0, 0], return_as_map=False, operation=np.mean):
     assert frame_true.shape == frame_hat.shape

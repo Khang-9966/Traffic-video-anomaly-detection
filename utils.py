@@ -3,6 +3,8 @@ import random
 import cv2
 import numpy as np
 import glob
+import torch
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def load_raw_groundtruth(data_type,groundtruth_dir=None):
     if data_type == "ped2":

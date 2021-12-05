@@ -70,7 +70,7 @@ for index in tqdm.tqdm(test_sample_video_frame_index):
   frame_index = index[1:]
   test_flow_list.append(   np.transpose( np.array( [ test_flows[video_index][img_index] for img_index in frame_index[1:]  ] ) , (0,3,1,2)   ).reshape(2,128,192) )
 
-test_train =  loader(test_index,test_foreground_list,test_flow_list)
+test_train =  loader(test_index,test_image_list,test_flow_list)
 
 
 test_loader = DataLoader(test_train, batch_size=1,

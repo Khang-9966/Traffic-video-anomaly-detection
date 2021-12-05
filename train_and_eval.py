@@ -110,7 +110,7 @@ generator_optimizer = optim.Adam(generator.parameters(), lr=args.g_lr, betas = (
 
 train_log = Loss_log(['G_loss', 'D_loss', 'opt_loss', 'gradi_loss' , 'inten_loss' ],args.exp_dir)
 
-checkpoint_save_path = args.exp_dir
+checkpoint_save_path = args.exp_dir +"/"+ args.data_type +"-"+ args.wandb_run_name +"/"
 model_name = "original"
 # Training Loop
 # Lists to keep track of progress

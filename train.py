@@ -170,7 +170,7 @@ for epoch in range(num_epochs):
 
         iters += 1
       
-    now_epoch = train_log.end_epoch(True)
+    now_epoch = train_log.end_epoch(True,args.wandb_log)
     torch.save(generator.state_dict(), checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt")
     torch.save(discriminator.state_dict(), checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt")
 

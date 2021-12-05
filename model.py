@@ -160,7 +160,6 @@ class Generator(nn.Module):
       self.G_conv_bn_relu_flow_5  = G_conv_bn_relu( image_filters*8 , image_filters*8, filter_size, stride=2,  bn=True  , padding = (1,1))
       self.G_conv_bn_relu_image_5  = G_conv_bn_relu( image_filters*8 , image_filters*8, filter_size, stride=2,  bn=True  , padding = (1,1))
 
-
       '''Unet DECODER for FRAME'''
       self.G_deconv_bn_dr_relu_concat_frame1 =  G_deconv_bn_dr_relu_concat( image_filters*8 + image_filters*8 , image_filters*8, filter_size, keep_prob , padding = (1,1) )
       self.G_deconv_bn_dr_relu_concat_frame2 =  G_deconv_bn_dr_relu_concat( image_filters*8 , image_filters*4, filter_size, keep_prob, padding = 1 )

@@ -15,7 +15,8 @@ parser.add_argument('--g_lr', type=float, default=0.0002, help='generator initia
 parser.add_argument('--d_lr', type=float, default=0.00002, help='discriminator initial learning rate')
 parser.add_argument('--fdim', type=int, default=512, help='channel dimension of the features')
 parser.add_argument('--mdim', type=int, default=512, help='channel dimension of the memory items')
-parser.add_argument('--msize', type=int, default=500, help='number of the memory items')
+parser.add_argument('--im_msize', type=int, default=500, help='number of the memory items')
+parser.add_argument('--flow_msize', type=int, default=500, help='number of the memory items')
 parser.add_argument('--num_workers', type=int, default=2, help='number of workers for the train loader')
 parser.add_argument('--num_workers_test', type=int, default=1, help='number of workers for the test loader')
 parser.add_argument('--data_type', type=str, default='belleview', help='type of dataset: ped2, avenue, shanghai')
@@ -61,7 +62,7 @@ discriminator = discriminator.to(device)
 discriminator.train()
 
 p_keep = 0.7
-generator = Generator(128,192,2,3,p_keep)
+generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
 
 generator = generator.to(device)
 # generator.apply(weights_init_normal)
@@ -152,7 +153,7 @@ for epoch in range(num_epochs):
     torch.save(discriminator.state_dict(), checkpoint_save_path+model_name+"_dis_"+ str(now_epoch)+".pt")
 
 p_keep = 1.0
-test_generator = Generator(128,192,2,3,p_keep)
+test_generator = Generator(128,192,2,3,p_keep,p_keep,args.im_msize,args.flow_msize)
 test_generator = test_generator.to(device)
 test_generator.load_state_dict(generator.state_dict())
 

@@ -33,7 +33,7 @@ BATCH_SIZE = args.batch_size
 
 train_images , train_flows = load_raw_data(data_type=args.data_type,train_or_test="train",data_dir=args.dataset_path)
 
-sample_video_frame_index , train_index , val_index = get_index_sample(train_images)
+sample_video_frame_index , train_index , val_index = get_index_sample(train_images,INDEX_STEP,NUM_TEMPORAL_FRAME)
 
 foreground_list = []
 for index in tqdm.tqdm(sample_video_frame_index):

@@ -73,8 +73,6 @@ def get_index_sample(images,INDEX_STEP,NUM_TEMPORAL_FRAME,TRAIN_VAL_SPLIT=0):
         sample_count += 1
         
   return sample_video_frame_index , train_index , val_index
-  
-sample_video_frame_index , train_index , val_index = get_index_sample(train_images)
 
 
 def extend_mag_channel(datum):

@@ -1,0 +1,172 @@
+import matplotlib.pyplot as plt
+import random
+import cv2
+import numpy as np
+import glob
+
+def load_raw_groundtruth(data_type,groundtruth_dir=None):
+    if data_type == "ped2":
+        return [[61, 180], [95, 180], [1, 146], [31, 180], [1, 129], [1, 159],
+                  [46, 180], [1, 180], [1, 120], [1, 150], [1, 180], [88, 180]]
+    if data_type == "belleview":
+        frame_label = []
+        for count in range(300,300+len(glob.glob(groundtruth_dir+"/GT/*"))-2):
+            label_png = "Traffic-Belleview/GT/gt-" + str( count ).zfill(5) + ".png"
+            label_png = cv2.imread(label_png,0)
+            if label_png.sum() == 0 :
+                frame_label.append(0)
+            else:
+                frame_label.append(1)
+        return frame_label
+
+def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_TEMPORAL_FRAME):
+  sample_video_frame_index = []
+  sample_count = 0
+  index_list = []
+  labels_temp = []
+  label_count = 0
+  for i in range(len(images)):
+    if data_type == "ped2" :
+        one_clip_labels = raw_ground_truth[i]
+
+    for j in range(len( images[i] )):
+      if j + INDEX_STEP*NUM_TEMPORAL_FRAME <=  len(images[i]) - 1  :
+        video_index = [i]
+        sample_video_frame_index.append( video_index + [ j + k*INDEX_STEP for k in range(NUM_TEMPORAL_FRAME)  ]    )
+        index_list.append(sample_count)
+        sample_count += 1
+
+        if data_type == "ped2" :
+            if j < one_clip_labels[1] and j >= one_clip_labels[0] - 1  :
+                labels_temp.append(1)
+            else:
+                labels_temp.append(0)
+        if data_type == "belleview" :
+            labels_temp.append(raw_ground_truth[label_count])
+
+      label_count += 1
+
+  return sample_video_frame_index , index_list , labels_temp
+  
+
+def get_index_sample(images,INDEX_STEP,NUM_TEMPORAL_FRAME,TRAIN_VAL_SPLIT=0):
+  sample_video_frame_index = []
+  train_append = True
+  sample_count = 0
+  train_index = []
+  val_index = []
+  for i in range(len(images)):
+
+    if random.random() <= TRAIN_VAL_SPLIT:
+      train_append = False
+    else:
+       train_append = True
+      
+    for j in range(len( images[i] )):
+      if j + INDEX_STEP*NUM_TEMPORAL_FRAME <=  len(images[i]) - 1  :
+        video_index = [i]
+        sample_video_frame_index.append( video_index + [ j + k*INDEX_STEP for k in range(NUM_TEMPORAL_FRAME)  ]    )
+        if train_append:
+          train_index.append(sample_count)
+        else:
+          val_index.append(sample_count)
+        sample_count += 1
+        
+  return sample_video_frame_index , train_index , val_index
+  
+sample_video_frame_index , train_index , val_index = get_index_sample(train_images)
+
+
+def extend_mag_channel(datum):
+    mag, _ = cv2.cartToPolar(datum[0 , :, :], datum[ 1, :, :])
+    return np.concatenate((datum, np.expand_dims(mag, axis=0)), axis=0)
+
+class Loss_log():
+  def __init__(self, loss_name_list,checkpoint_save_path): 
+    self.loss_name_list = loss_name_list
+    self.inter_loss = {}
+    self.epoch_loss = {}
+    self.checkpoint_save_path = checkpoint_save_path
+    for name in self.loss_name_list:
+      self.inter_loss[name] = []
+      self.epoch_loss[name] = []
+
+  def add_inter_loss( self, loss_ ):
+    for name in loss_:
+      self.inter_loss[name] = loss_[name]
+  
+  def end_epoch(self, plot):
+    # mean
+    for name in self.loss_name_list:
+      self.epoch_loss[name].append(np.mean( self.inter_loss[name] ))
+    # clear
+    for name in self.loss_name_list:
+      self.inter_loss[name] = []
+    if plot:
+      epoch = list(range(len(self.epoch_loss[self.loss_name_list[0]])))
+      fig , ax=plt.subplots( figsize=(20,5))
+      for name in self.loss_name_list:
+        ax.plot(epoch,self.epoch_loss[name],label=name)
+      legend = ax.legend(loc='upper left')
+      try:
+        plt.show()
+      except:
+        plt.savefig(self.checkpoint_save_path+"/epoch_"+str(epoch)+"_train_chart.png")
+        
+    return int(len(epoch))
+
+def flow_to_RGB(flow,bound=10):
+  hsv = np.zeros((flow.shape[0],flow.shape[1],3))
+  hsv[..., 2] = 255
+  #flow = flow/127.5 - 1. 
+  mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+  hsv[..., 0] = ang * 180 / np.pi / 2
+  hsv[..., 1] = mag / (bound) * 255 
+  bgr = cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2RGB)
+  return bgr
+
+
+def visualizing(real_image,output_appe,real_flow,output_opt,checkpoint_save_path,epoch):
+    real_img = (   np.array(  np.clip( real_image.detach().cpu() , -1.0 , 1.0 )   ) * 127 + 127.   ).astype(np.uint8)
+    real_img = real_img[0][0,:,:]
+
+    gen_img = (   np.array(  np.clip( output_appe.detach().cpu() , -1.0 , 1.0 )   ) * 127  + 127.  ).astype(np.uint8)
+    gen_img = gen_img[0][0,:,:]
+
+    aver_img =   np.mean( np.array(  np.clip( real_image.detach().cpu() , -1.0 , 1.0 ) )[0]  , axis = 0 ) 
+    aver_img = (aver_img* 127. + 127.).astype(np.uint8)
+
+    real_flow = np.array(  real_flow.detach().cpu() ) 
+    real_flow = np.transpose(  real_flow[0,:2], ( 1,2, 0) )
+
+    gen_flow = np.array(  output_opt.detach().cpu()  ) 
+    gen_flow = np.transpose(  gen_flow[0,:2], ( 1,2, 0) )
+
+    fig, axs = plt.subplots(1, 5, figsize=(30, 5))
+    for ax, interp, img_ in zip(axs, ['real img', 'gen img', 'real flow', 'gen flow', 'averg' ], [real_img,gen_img,real_flow,gen_flow,aver_img  ]):
+      if interp in ['real img', 'gen img', 'averg']:
+        ax.imshow( img_ , "gray")
+      else:
+        ax.imshow( flow_to_RGB(img_.astype( np.float32) ))
+      ax.set_title(interp.capitalize())
+      ax.grid(True)
+    try:
+      plt.show()
+    except:
+      plt.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"train_app_flow.png")
+
+def test_flow_vil(output_opt,real_flow,checkpoint_save_path,epoch):
+  def scale_range(img):
+    for i in range(img.shape[-1]):
+        img[..., i] = (img[..., i] - np.min(img[..., i]))/(np.max(img[..., i]) - np.min(img[..., i]))
+    return img
+  output_opt = output_opt[0].detach().cpu().numpy().transpose((1,2,0))
+  real_flow = real_flow[0].detach().cpu().numpy().transpose((1,2,0))
+  fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+  axs[0].imshow(scale_range(real_flow))
+  axs[1].imshow(scale_range(output_opt))
+  try:
+    plt.show()
+  except:
+    plt.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"train_flow.png")
+

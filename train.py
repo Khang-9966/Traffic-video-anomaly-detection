@@ -170,11 +170,13 @@ for epoch in range(num_epochs):
 
         iters += 1
       
-    now_epoch = train_log.end_epoch(True,wandb)
+    now_epoch = train_log.end_epoch(True)
     torch.save(generator.state_dict(), checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt")
     torch.save(discriminator.state_dict(), checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt")
 
-    # if args.wandb_log:
+    if args.wandb_log:
+      for name in train_log.loss_name_list:
+        wandb.log({ name : float(train_log.epoch_loss[name][-1]) } )
     #   wandb.log({"gen_dir": checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt", 
     #             "dis_dir": checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt"}, step=now_epoch)
 

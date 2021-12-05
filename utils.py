@@ -97,7 +97,7 @@ class Loss_log():
     for name in loss_:
       self.inter_loss[name] = loss_[name]
   
-  def end_epoch(self, plot , wandb = None):
+  def end_epoch(self, plot ):
     # mean
     for name in self.loss_name_list:
       self.epoch_loss[name].append(np.mean( self.inter_loss[name] ))
@@ -109,11 +109,6 @@ class Loss_log():
       fig , ax=plt.subplots( figsize=(20,5))
       for name in self.loss_name_list:
         ax.plot(epoch,self.epoch_loss[name],label=name)
-      
-      if wandb is not None:
-        for name in self.loss_name_list:
-          wandb.log({ name : self.epoch_loss[name][-1] } )
-
       legend = ax.legend(loc='upper left')
       # try:
       #   plt.show()

@@ -213,13 +213,13 @@ torch.save(test_generator.state_dict(), checkpoint_save_path+"/"+model_name+"_fi
 # if args.wandb_log:
 #   wandb.log({"final_model_dir": checkpoint_save_path+"/"+model_name+"_final_gen_"+str(now_epoch) +".pt"})
 
-# p_keep = 1.0
-# test_generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
-# test_generator = test_generator.to(device)
+p_keep = 1.0
+test_generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
+test_generator = test_generator.to(device)
 
-# test_generator.load_state_dict(torch.load( checkpoint_save_path+"/"+model_name+"_final_gen_"+str(args.epochs) +".pt"))
+test_generator.load_state_dict(torch.load( checkpoint_save_path+"/"+model_name+"_final_gen_"+str(args.epochs) +".pt"))
 
-# test_generator.eval()
+test_generator.eval()
 
 
 raw_ground_truth = load_raw_groundtruth(data_type=args.data_type,groundtruth_dir=args.groundtruth_path)

@@ -13,8 +13,7 @@ import math
 from torch.nn.parameter import Parameter
 from torch.nn import functional as F
 import numpy as np
-import memory.GLOBAL_MemModule as GLOBAL_MemModule
-import memory.LOCAL_MemModule as LOCAL_MemModule
+from memory import *
 
 
 def weights_init_normal(m):

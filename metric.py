@@ -3,8 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from sklearn.metrics import roc_auc_score, average_precision_score, precision_recall_curve, roc_curve
-#from sklearn.utils.fixes import signature
-
 from skimage.metrics import structural_similarity as ssim
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -67,10 +65,10 @@ def basic_assess_AUC(scores, labels, plot_pr_idx=None):
         plt.ylabel('precision')
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
-        try:
-            plt.show()
-        except:
-            plt.savefig('precision_recall.png')
+        # try:
+        #     plt.show()
+        # except:
+        plt.savefig('precision_recall.png')
     # print(scores.shape)
     # print( [ scores[:, i] for i in range(scores.shape[1])])
     auc = []
@@ -202,10 +200,10 @@ def score_norm( score, quantile=0.95, output_min=0, output_max = 1 ,log=False, m
     score = np.log(score)
   
   plt.hist(score,bins=100)
-  try:
-      plt.show()
-  except:
-      plt.savefig("Score_hist_"+str(quantile)+str(output_min)+str(output_max)+".png")
+#   try:
+#       plt.show()
+#   except:
+  plt.savefig("Score_hist_"+str(quantile)+str(output_min)+str(output_max)+".png")
   max_score = np.max(score, axis=0)
   min_score = np.min(score, axis=0)
   range_score = max_score-min_score

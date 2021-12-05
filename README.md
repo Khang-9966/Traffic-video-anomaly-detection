@@ -13,12 +13,14 @@
 
 
 ## Training
-
+* Belleview
 ```bash
 python train.py --dataset_path .. --data_type belleview --exp_dir "../save_model"
 ```
-
+* Ped2
 ## Testing
+* Belleview
 ```bash
 python eval.py  --dataset_path .. --data_type belleview --exp_dir "../save_model" --exp_dir "../save_model" --groundtruth_path "../Traffic-Belleview/"
 ```
+* Ped2

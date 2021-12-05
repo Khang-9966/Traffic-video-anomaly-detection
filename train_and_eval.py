@@ -31,8 +31,6 @@ parser.add_argument('--wandb_run_name', type=str, default="test", help='Wandb ML
 parser.add_argument('--eval_method', type=str, default='all', help=' all , normal , custom ')
 parser.add_argument('--mag_quantile', type=float, default=0.99, help=' mag cut for custom method ')
 parser.add_argument('--min_flow_weight', type=float, default=0.1, help=' min flow weight in custom method ')
-parser.add_argument('--wandb_log', type=bool, default=False, help='Wandb ML ops monitor')
-parser.add_argument('--wandb_run_name', type=str, default="test", help='Wandb ML ops monitor wandb_run_name')
 
 args = parser.parse_args()
 

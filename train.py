@@ -77,8 +77,8 @@ generator_optimizer = optim.Adam(generator.parameters(), lr=args.g_lr, betas = (
 # scheduler = optim.lr_scheduler.MultiStepLR(discriminator_optimizer, 
 #             milestones=lr_milestones, gamma=0.1)
 
-train_log = Loss_log(['G_loss', 'D_loss', 'opt_loss', 'gradi_loss' , 'inten_loss' ])
-val_log = Loss_log(['G_loss', 'D_loss', 'opt_loss', 'gradi_loss' , 'inten_loss' ])
+train_log = Loss_log(['G_loss', 'D_loss', 'opt_loss', 'gradi_loss' , 'inten_loss' ],args.exp_dir)
+
 checkpoint_save_path = args.exp_dir
 model_name = "original"
 # Training Loop

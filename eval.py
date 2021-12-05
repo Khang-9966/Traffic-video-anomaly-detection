@@ -124,11 +124,11 @@ if args.eval_method == "all" or args.eval_method == "normal":
                   True, None,
                   save_pr_appe_SSIM_epoch=True)
   if args.wandb_log:
-    metric_list = ["PSNR_X","PSNR_inv","PSNR","SSIM","MSE","maxSE","std","MSE_1c","maxSE_1c","std_1c"]
+    metric_list = ["PSNRX","PSNRinv","PSNR","SSIM","MSE","maxSE","std","MSE1c","maxSE1c","std1c"]
     for i in range(len(metric_list)):
-       wandb.log({ "Appearance AUC " + metric_list[i] : appe_auc[i]} )
+       wandb.log({ "AppearanceAUC " + metric_list[i] : appe_auc[i]} )
     for i in range(len(appe_prc)):
-       wandb.log({ "Appearance AP " + metric_list[i] : appe_prc[i]} )
+       wandb.log({ "AppearanceAP " + metric_list[i] : appe_prc[i]} )
 
 if args.eval_method == "all" or args.eval_method == "custom":
   STEP = 4
@@ -174,7 +174,7 @@ if args.eval_method == "all" or args.eval_method == "custom":
   diff_map_appe_list = np.array(diff_map_appe_list)
   mag_map_list = np.array(mag_map_list)
 
-  norm_mag_map = score_norm(mag_map_list.reshape(-1), quantile= args.quantile , output_min= args.min_flow_weight , output_max = 1 - args.min_flow_weight ).reshape( len(mag_map_list) ,-1)
+  norm_mag_map = score_norm(mag_map_list.reshape(-1), quantile= args.mag_quantile , output_min= args.min_flow_weight , output_max = 1 - args.min_flow_weight ).reshape( len(mag_map_list) ,-1)
   norm_diff_map_flow = score_norm(diff_map_flow_list.reshape(-1), quantile=None, output_min=0 , output_max = 1 , log= True, max_value=100 ).reshape( len(diff_map_flow_list) ,-1)
   norm_diff_map_appe = score_norm(diff_map_appe_list.reshape(-1), quantile=None, output_min=0 , output_max = 1 , log= True,  max_value=1 ).reshape( len(diff_map_appe_list) ,-1)
   combine_score = norm_diff_map_flow*norm_mag_map + norm_diff_map_appe*(1-norm_mag_map)
@@ -195,9 +195,9 @@ if args.eval_method == "all" or args.eval_method == "custom":
   print("Combine AP: ",average_precision_score(labels_temp, combine_max_score))
 
   if args.wandb_log:
-    wandb.log({"Combine AUC": roc_auc_score(labels_temp, combine_max_score)})
-    wandb.log({"Combine AP": average_precision_score(labels_temp, combine_max_score) })
-    wandb.log({"Appearence AUC": roc_auc_score(labels_temp, max_app_mean)})
-    wandb.log({"Appearence AP": average_precision_score(labels_temp, max_app_mean) })
-    wandb.log({"Flow AUC": roc_auc_score(labels_temp, max_flow_mean)})
-    wandb.log({"Flow AP": average_precision_score(labels_temp, max_flow_mean) })
+    wandb.log({"CombineAUC": roc_auc_score(labels_temp, combine_max_score)})
+    wandb.log({"CombineAP": average_precision_score(labels_temp, combine_max_score) })
+    wandb.log({"AppearenceAUC": roc_auc_score(labels_temp, max_app_mean)})
+    wandb.log({"AppearenceAP": average_precision_score(labels_temp, max_app_mean) })
+    wandb.log({"FlowAUC": roc_auc_score(labels_temp, max_flow_mean)})
+    wandb.log({"FlowAP": average_precision_score(labels_temp, max_flow_mean) })

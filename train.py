@@ -35,12 +35,12 @@ if args.wandb_log:
   wandb.init(project=args.data_type,  name = args.wandb_run_name, entity="khang-9966") # +"-"+str(time.ctime(int(time.time())) )
 
   wandb.config = {
-    "batch_size": args.batch_size,
+    "batchsize": args.batch_size,
     "epochs": args.epochs,
     "h": args.h,
     "w": args.w,
-    "g_lr": args.g_lr,
-    "d_lr": args.d_lr,
+    "glr": args.g_lr,
+    "dlr": args.d_lr,
     "fdim": args.fdim,
     "mdim": args.mdim,
     "im_msize": args.im_msize,
@@ -176,7 +176,7 @@ for epoch in range(num_epochs):
 
     if args.wandb_log:
       for name in train_log.loss_name_list:
-        wandb.log({ str(name).replace("_","") : float(train_log.epoch_loss[name][-1]) } )
+        wandb.log({ str(name).replace("_","") : float(train_log.epoch_loss[name][-1]) } , step=int(now_epoch) )
         
     #   wandb.log({"gen_dir": checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt", 
     #             "dis_dir": checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt"}, step=now_epoch)
@@ -197,5 +197,5 @@ test_generator.eval()
 
 torch.save(test_generator.state_dict(), checkpoint_save_path+"/"+model_name+"_final_gen_"+str(now_epoch) +".pt")
 
-if args.wandb_log:
-  wandb.log({"final_model_dir": checkpoint_save_path+"/"+model_name+"_final_gen_"+str(now_epoch) +".pt"})
+# if args.wandb_log:
+#   wandb.log({"final_model_dir": checkpoint_save_path+"/"+model_name+"_final_gen_"+str(now_epoch) +".pt"})

@@ -175,8 +175,9 @@ for epoch in range(num_epochs):
     torch.save(discriminator.state_dict(), checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt")
 
     if args.wandb_log:
+      wandb.log({ "name" : 1 })
       for name in train_log.loss_name_list:
-        wandb.log({ name : 1 } )
+        wandb.log({ name : 1 })
     #   wandb.log({"gen_dir": checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt", 
     #             "dis_dir": checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt"}, step=now_epoch)
 

@@ -108,10 +108,10 @@ class Loss_log():
       for name in self.loss_name_list:
         ax.plot(epoch,self.epoch_loss[name],label=name)
       legend = ax.legend(loc='upper left')
-      try:
-        plt.show()
-      except:
-        fig.savefig(self.checkpoint_save_path+"/epoch_"+str(epoch)+"_train_chart.png")
+      # try:
+      #   plt.show()
+      # except:
+      fig.savefig(self.checkpoint_save_path+"/epoch_"+str(epoch)+"_train_chart.png")
         
     return int(len(epoch))
 
@@ -150,10 +150,10 @@ def visualizing(real_image,output_appe,real_flow,output_opt,checkpoint_save_path
         ax.imshow( flow_to_RGB(img_.astype( np.float32) ))
       ax.set_title(interp.capitalize())
       ax.grid(True)
-    try:
-      plt.show()
-    except:
-      fig.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"train_app_flow.png")
+    # try:
+    #   plt.show()
+    # except:
+    fig.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"train_app_flow.png")
 
 def test_flow_vil(output_opt,real_flow,checkpoint_save_path,epoch):
   def scale_range(img):
@@ -165,8 +165,8 @@ def test_flow_vil(output_opt,real_flow,checkpoint_save_path,epoch):
   fig, axs = plt.subplots(1, 2, figsize=(10, 5))
   axs[0].imshow(scale_range(real_flow))
   axs[1].imshow(scale_range(output_opt))
-  try:
-    plt.show()
-  except:
-    fig.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"train_flow.png")
+  # try:
+  #   plt.show()
+  # except:
+  fig.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"train_flow.png")
 

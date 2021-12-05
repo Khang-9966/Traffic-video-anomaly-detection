@@ -112,7 +112,7 @@ class Loss_log():
       
       if wandb is not None:
         for name in self.loss_name_list:
-          wandb.log({ name : 1 } , step=int(len(epoch)))
+          wandb.log({ name : float(self.epoch_loss[name]) } )
 
       legend = ax.legend(loc='upper left')
       # try:

@@ -173,7 +173,7 @@ for epoch in range(num_epochs):
     now_epoch = train_log.end_epoch(True,wandb)
     torch.save(generator.state_dict(), checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt")
     torch.save(discriminator.state_dict(), checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt")
-    wandb.log({ "hihihi" : 1.0 })
+
     # if args.wandb_log:
     #   wandb.log({"gen_dir": checkpoint_save_path+"/"+model_name+"_gen_"+str(now_epoch) +".pt", 
     #             "dis_dir": checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt"}, step=now_epoch)

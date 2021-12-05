@@ -13,7 +13,7 @@ def load_raw_groundtruth(data_type,groundtruth_dir=None):
     if data_type == "belleview":
         frame_label = []
         for count in range(300,300+len(glob.glob(groundtruth_dir+"/GT/*"))-2):
-            label_png = "Traffic-Belleview/GT/gt-" + str( count ).zfill(5) + ".png"
+            label_png = groundtruth_dir + "/GT/gt-" + str( count ).zfill(5) + ".png"
             label_png = cv2.imread(label_png,0)
             if label_png.sum() == 0 :
                 frame_label.append(0)

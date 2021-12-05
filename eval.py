@@ -29,6 +29,11 @@ parser.add_argument('--groundtruth_path', type=str, default='', help='directory 
 
 args = parser.parse_args()
 
+NUM_TEMPORAL_FRAME = 2
+INDEX_STEP = 1
+TRAIN_VAL_SPLIT = 0.0
+BATCH_SIZE = args.batch_size
+
 
 DATASET_TYPE = args.data_type
 

@@ -8,6 +8,17 @@ import wandb
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+def load_ground_truth_Avenue(folder, n_clip):
+    ret = []
+    for i in range(n_clip):
+        filename = '%s/%d_label.mat' % (folder, i+1)
+        # print(filename)
+        data = loadmat(filename)['volLabel']
+        n_bin = np.array([np.sum(data[0, i]) for i in range(len(data[0]))])
+        abnormal_frames = np.where(n_bin > 0)[0]
+        ret.append(get_segments(abnormal_frames))
+    return ret
+
 def load_raw_groundtruth(data_type,groundtruth_dir=None):
     if data_type == "ped2":
         return [[61, 180], [95, 180], [1, 146], [31, 180], [1, 129], [1, 159],
@@ -32,6 +43,11 @@ def load_raw_groundtruth(data_type,groundtruth_dir=None):
             else:
                 frame_label.append(1)
         return frame_label
+    if data_type == "avenue":
+      return load_ground_truth_Avenue(data_type,21)
+    if data_type == "idiap":
+      return np.load(groundtruth_dir+"/frame_labels.npy")
+    
 
 def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_TEMPORAL_FRAME):
   sample_video_frame_index = []
@@ -41,6 +57,8 @@ def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_
   label_count = 0
   for i in range(len(images)):
     if data_type == "ped2" :
+        one_clip_labels = raw_ground_truth[i]
+    if data_type == "avenue":
         one_clip_labels = raw_ground_truth[i]
 
     for j in range(len( images[i] )):
@@ -57,6 +75,11 @@ def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_
                 labels_temp.append(0)
         if data_type == "belleview" or data_type == "train":
             labels_temp.append(raw_ground_truth[label_count])
+        if data_type == "avenue":
+          if j < one_clip_labels[1] and j >= one_clip_labels[0] - 1  :
+            labels_temp.append(1)
+          else:
+            labels_temp.append(0)
 
       label_count += 1
 

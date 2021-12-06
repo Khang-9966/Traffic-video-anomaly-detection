@@ -5,6 +5,8 @@ import torch
 import numpy as np
 from torch.utils import data
 from utils import *
+import os 
+import tqdm
 
 def resize(datum, size):
     if len(datum.shape) == 2:
@@ -18,8 +20,12 @@ def resize(datum, size):
 def load_raw_data(data_type,train_or_test,data_dir):
     if data_type == "ped2":
         return load_raw_ped2(train_or_test,data_dir)
+    if data_type == "avenue":
+        return load_raw_avenue(train_or_test,data_dir)
     if data_type == "belleview" or data_type == "train" :
         return load_raw_train_belleview(train_or_test,data_dir)
+    if data_type == "idiap":
+        return load_raw_idiap(train_or_test,data_dir)
 
 def load_raw_ped2(train_or_test,data_dir="/content/content/flownet2pytorch/FlowNet2-pytorch/"):
     if train_or_test == "train":
@@ -47,6 +53,32 @@ def load_raw_ped2(train_or_test,data_dir="/content/content/flownet2pytorch/FlowN
             all_test_flows.append(test_flows)
         return all_test_images,all_test_flows
 
+def load_raw_avenue(train_or_test,data_dir="/content/content/flownet2pytorch/FlowNet2-pytorch/"):
+    if train_or_test == "train":
+        all_train_images = []
+        all_train_flows = []
+        for i in range(1,17):
+            all_data = np.load(data_dir+"ped2/training/Train"+str(i).zfill(2)+"_full.npy")
+            image_data = all_data[:,:,:,:3]
+            train_images = np.array([resize( cv2.cvtColor(image_, cv2.COLOR_RGB2GRAY) , (192, 128)) for image_ in image_data]).astype(np.float32)
+            flow_data = all_data[:,:,:,3:]
+            train_flows = np.array([resize(flow_datum, (192, 128)) for flow_datum in flow_data]).astype(np.float32)
+            all_train_images.append(train_images)
+            all_train_flows.append(train_flows)
+        return all_train_images,all_train_flows
+    elif train_or_test == "test":
+        all_test_images = []
+        all_test_flows = []
+        for i in range(1,22):
+            all_data = np.load(data_dir+"ped2/testing/Test"+str(i).zfill(2)+"_full.npy")
+            image_data = all_data[1:,:,:,:3]
+            test_images = np.array([resize(  cv2.cvtColor(image_, cv2.COLOR_RGB2GRAY)  , (192, 128)) for image_ in image_data]).astype(np.float32)
+            flow_data = all_data[1:,:,:,3:]
+            test_flows = np.array([resize(flow_datum, (192, 128)) for flow_datum in flow_data]).astype(np.float32)
+            all_test_images.append(test_images)
+            all_test_flows.append(test_flows)
+        return all_test_images,all_test_flows
+
 def load_raw_train_belleview(train_or_test,data_dir):
     all_data = np.load(data_dir+"/"+train_or_test+"/001_full.npy")
     image_data = all_data[:,:,:,:3]
@@ -54,6 +86,29 @@ def load_raw_train_belleview(train_or_test,data_dir):
     flow_data = all_data[:,:,:,3:]
     train_flows = np.array([resize(flow_datum, (192, 128)) for flow_datum in flow_data]).astype(np.float32)
     return [train_images],[train_flows]
+
+def load_raw_idiap(train_or_test,data_dir):
+    train_images = []
+    train_flows = []
+    if train_or_test == "train":
+        train_or_test == "training"
+    else:
+        train_or_test = "testing"
+    for folder in tqdm.tqdm(sorted(os.listdir(data_dir+"/"+train_or_test+"/frames/"))):
+        video_train = []
+        flow_train = []
+        for image_ in sorted(os.listdir(data_dir+"/"+train_or_test+"/frames/"+folder)):
+            image_path = data_dir+"/"+train_or_test+"/frames/"+folder+"/"+image_
+            img = cv2.imread(image_path)[:,:,::-1]
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+            img = cv2.resize(img,(192,128))
+            video_train.append(img)
+            fl = np.load(image_path.replace("frames","flows").replace("jpg","npy"))
+            flow_train.append(cv2.resize(fl,(192,128)))
+        train_images.append(video_train)
+        train_flows.append(flow_train)
+    return train_images,train_flows
+
 
 class loader(data.Dataset):
     """This class is needed to processing batches for the dataloader."""

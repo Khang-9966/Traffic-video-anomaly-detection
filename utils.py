@@ -46,7 +46,7 @@ def load_raw_groundtruth(data_type,groundtruth_dir=None):
     if data_type == "avenue":
       return load_ground_truth_Avenue(data_type,21)
     if data_type == "idiap":
-      return np.load(groundtruth_dir+"/frame_labels.npy")
+      return np.load(groundtruth_dir+"/frame_labels.npy")[0]
     
 
 def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_TEMPORAL_FRAME):

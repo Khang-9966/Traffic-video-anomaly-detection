@@ -138,7 +138,7 @@ def flow_to_RGB(flow,bound=10):
   return bgr
 
 
-def visualizing(real_image,output_appe,real_flow,output_opt,checkpoint_save_path,epoch):
+def visualizing(real_image,output_appe,real_flow,output_opt,checkpoint_save_path,epoch,tran_or_test="train"):
     real_img = (   np.array(  np.clip( real_image.detach().cpu() , -1.0 , 1.0 )   ) * 127 + 127.   ).astype(np.uint8)
     real_img = real_img[0][0,:,:]
 
@@ -165,7 +165,7 @@ def visualizing(real_image,output_appe,real_flow,output_opt,checkpoint_save_path
     # try:
     #   plt.show()
     # except:
-    fig.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"_train_app_flow.png")
+    fig.savefig(checkpoint_save_path+"/"+tran_or_test+"_epoch_"+str(epoch)+"_train_app_flow.png")
 
 def test_flow_vil(output_opt,real_flow,checkpoint_save_path,epoch):
   def scale_range(img):

@@ -248,6 +248,7 @@ test_data =  loader(test_index,test_image_list,test_flow_list)
 test_loader = DataLoader(test_data, batch_size=args.batch_size,
                                   shuffle=False, num_workers=args.num_workers_test)
 
+test_step = 0
 if args.eval_method == "all" or args.eval_method == "normal":
   score_frame_ = []
   for real_image,  real_flow  in Bar(test_loader):
@@ -257,7 +258,10 @@ if args.eval_method == "all" or args.eval_method == "normal":
       plh_flow_true = real_flow.float().to(device)
 
       output_opt, output_appe = test_generator(plh_frame_true,plh_flow_true)
-
+    
+      if random.random() <= 0.05:
+        visualizing(real_image,output_appe,real_flow,output_opt,checkpoint_save_path,test_step,"test")
+      
       output_appe = output_appe.detach().cpu().numpy().transpose((0,2,3,1))*0.5 + 0.5
       real_image = real_image.detach().cpu().numpy().transpose((0,2,3,1))*0.5 + 0.5
       real_flow = real_flow.detach().cpu().numpy().transpose((0,2,3,1))
@@ -267,6 +271,7 @@ if args.eval_method == "all" or args.eval_method == "normal":
       # print(output_appe.min(),output_appe.max(),real_image.min(),real_image.max())
       for i in range(len(real_flow)):
         score_frame_.append(calc_anomaly_score_one_frame(real_image[i].astype(np.float32), output_appe[i].astype(np.float32), real_flow[i].astype(np.float32), output_opt[i].astype(np.float32)))
+    test_step += 1
 
   score_frame = np.array(score_frame_)
 

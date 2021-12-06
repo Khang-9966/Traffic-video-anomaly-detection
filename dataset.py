@@ -91,7 +91,7 @@ def load_raw_idiap(train_or_test,data_dir):
     train_images = []
     train_flows = []
     if train_or_test == "train":
-        train_or_test == "training"
+        train_or_test = "training"
     else:
         train_or_test = "testing"
     for folder in tqdm.tqdm(sorted(os.listdir(data_dir+"/"+train_or_test+"/frames/"))):

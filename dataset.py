@@ -18,8 +18,8 @@ def resize(datum, size):
 def load_raw_data(data_type,train_or_test,data_dir):
     if data_type == "ped2":
         return load_raw_ped2(train_or_test,data_dir)
-    if data_type == "belleview":
-        return load_raw_belleview(train_or_test,data_dir)
+    if data_type == "belleview" or data_type == "train" :
+        return load_raw_train_belleview(train_or_test,data_dir)
 
 def load_raw_ped2(train_or_test,data_dir="/content/content/flownet2pytorch/FlowNet2-pytorch/"):
     if train_or_test == "train":
@@ -47,7 +47,7 @@ def load_raw_ped2(train_or_test,data_dir="/content/content/flownet2pytorch/FlowN
             all_test_flows.append(test_flows)
         return all_test_images,all_test_flows
 
-def load_raw_belleview(train_or_test,data_dir):
+def load_raw_train_belleview(train_or_test,data_dir):
     all_data = np.load(data_dir+"/"+train_or_test+"/001_full.npy")
     image_data = all_data[:,:,:,:3]
     train_images = np.array([resize( cv2.cvtColor(image_, cv2.COLOR_RGB2GRAY) , (192, 128)) for image_ in image_data]).astype(np.float32)

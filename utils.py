@@ -22,6 +22,16 @@ def load_raw_groundtruth(data_type,groundtruth_dir=None):
             else:
                 frame_label.append(1)
         return frame_label
+    if data_type == "train":
+        frame_label = []
+        for count in range(13840,800+len(glob.glob(groundtruth_dir+"/GT/*"))-1):
+            label_png = groundtruth_dir + "/GT/gt-" + str( count ).zfill(5) + ".png"
+            label_png = cv2.imread(label_png,0)
+            if label_png.sum() == 0 :
+                frame_label.append(0)
+            else:
+                frame_label.append(1)
+        return frame_label
 
 def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_TEMPORAL_FRAME):
   sample_video_frame_index = []
@@ -45,7 +55,7 @@ def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_
                 labels_temp.append(1)
             else:
                 labels_temp.append(0)
-        if data_type == "belleview" :
+        if data_type == "belleview" or data_type == "train":
             labels_temp.append(raw_ground_truth[label_count])
 
       label_count += 1

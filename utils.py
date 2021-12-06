@@ -75,6 +75,8 @@ def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_
                 labels_temp.append(0)
         if data_type == "belleview" or data_type == "train":
             labels_temp.append(raw_ground_truth[label_count])
+        if data_type == "idiap":
+          labels_temp.append(raw_ground_truth[label_count])
         if data_type == "avenue":
           if j < one_clip_labels[1] and j >= one_clip_labels[0] - 1  :
             labels_temp.append(1)

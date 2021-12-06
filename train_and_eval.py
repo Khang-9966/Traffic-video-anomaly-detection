@@ -259,7 +259,7 @@ if args.eval_method == "all" or args.eval_method == "normal":
 
       output_opt, output_appe = test_generator(plh_frame_true,plh_flow_true)
     
-      if random.random() <= 0.05:
+      if random.random() <= 0.3:
         visualizing(real_image,output_appe,real_flow,output_opt,checkpoint_save_path,test_step,"test")
       
       output_appe = output_appe.detach().cpu().numpy().transpose((0,2,3,1))*0.5 + 0.5

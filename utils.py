@@ -5,8 +5,22 @@ import numpy as np
 import glob
 import torch
 import wandb
-
+from scipy.io import loadmat
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+def get_segments(seq):
+    def find_ends(seq):
+        tmp = np.insert(seq, 0, -10)
+        diff = tmp[1:] - tmp[:-1]
+        peaks = np.where(diff != 1)[0]
+        #
+        ret = np.empty((len(peaks), 2), dtype=int)
+        for i in range(len(ret)):
+            ret[i] = [peaks[i], (peaks[i+1]-1) if i < len(ret)-1 else (len(seq)-1)]
+        return ret
+    #
+    ends = find_ends(seq)
+    return np.array([[seq[curr_end[0]], seq[curr_end[1]]] for curr_end in ends]).reshape(-1) + 1  # +1 for 1-based index (same as UCSD data)
 
 def load_ground_truth_Avenue(folder, n_clip):
     ret = []

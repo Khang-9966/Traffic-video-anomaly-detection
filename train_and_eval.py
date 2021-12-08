@@ -95,7 +95,7 @@ discriminator = discriminator.to(device)
 # discriminator.apply(weights_init_normal)
 discriminator.train()
 
-p_keep = 1-args.train_dropout
+p_keep = 1 - args.train_dropout
 generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
 
 generator = generator.to(device)

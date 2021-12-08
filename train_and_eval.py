@@ -89,14 +89,14 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 discriminator = Discriminator(5)
 
 discriminator = discriminator.to(device)
-discriminator.apply(weights_init_normal)
+# discriminator.apply(weights_init_normal)
 discriminator.train()
 
 p_keep = 0.7
 generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
 
 generator = generator.to(device)
-generator.apply(weights_init_normal)
+# generator.apply(weights_init_normal)
 generator.train()
 
 weight_decay_ae=0.5e-5

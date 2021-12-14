@@ -32,6 +32,8 @@ parser.add_argument('--eval_method', type=str, default='all', help=' all , norma
 parser.add_argument('--mag_quantile', type=float, default=0.99, help=' mag cut for custom method ')
 parser.add_argument('--min_flow_weight', type=float, default=0.1, help=' min flow weight in custom method ')
 parser.add_argument('--train_dropout', type=float, default=0.3, help=' train drop out')
+parser.add_argument('--weight_init', type=bool, default=True, help='normal distribution weight init')
+
 
 
 args = parser.parse_args()
@@ -57,7 +59,8 @@ if args.wandb_log:
             "mag_quantile": args.mag_quantile,
             "min_flow_weight": args.min_flow_weight,
             "full_model_dir" : args.exp_dir +"/"+ args.data_type +"-"+ args.wandb_run_name +"/",
-            "train_dropout" : args.train_dropout
+            "train_dropout" : args.train_dropout,
+            "weight_init" : args.weight_init
           }
         ) # +"-"+str(time.ctime(int(time.time())) )
 
@@ -92,14 +95,16 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 discriminator = Discriminator(5)
 
 discriminator = discriminator.to(device)
-# discriminator.apply(weights_init_normal)
+if args.weight_init:
+  discriminator.apply(weights_init_memAE_git)
 discriminator.train()
 
 p_keep = 1 - args.train_dropout
 generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
 
 generator = generator.to(device)
-# generator.apply(weights_init_normal)
+if args.weight_init:
+  generator.apply(weights_init_memAE_git)
 generator.train()
 
 weight_decay_ae=0.5e-5

@@ -23,6 +23,17 @@ def weights_init_normal(m):
     elif classname.find("Linear") != -1:
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
 
+def weights_init_memAE_git(m):
+    classname = m.__class__.__name__
+    # print(classname)
+    if classname.find('Conv') != -1:
+        m.weight.data.normal_(0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        m.weight.data.normal_(1.0, 0.02)
+        m.bias.data.fill_(0)  
+    elif classname.find("Linear") != -1:
+        torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
+
 PADDING_MODE = "reflect"
 
 def conv2d( in_channel , out_channel, filter_size=(3,3),  stride=1 , padding = 0  , bias = True):

@@ -204,6 +204,8 @@ for epoch in range(num_epochs):
 
 p_keep = 1.0
 test_generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
+if args.weight_init:
+  test_generator.apply(weights_init_memAE_git)
 test_generator = test_generator.to(device)
 test_generator.load_state_dict(generator.state_dict())
 

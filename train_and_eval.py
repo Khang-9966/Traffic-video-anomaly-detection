@@ -240,7 +240,7 @@ for epoch in range(num_epochs):
     #             "dis_dir": checkpoint_save_path+"/"+model_name+"_dis_"+ str(now_epoch)+".pt"}, step=now_epoch)
 
 p_keep = 1.0
-test_generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
+test_generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize,model_config_dict)
 if args.weight_init:
   test_generator.apply(weights_init_memAE_git)
 test_generator = test_generator.to(device)
@@ -261,7 +261,7 @@ torch.save(test_generator.state_dict(), checkpoint_save_path+"/"+model_name+"_fi
 #   wandb.log({"final_model_dir": checkpoint_save_path+"/"+model_name+"_final_gen_"+str(now_epoch) +".pt"})
 
 p_keep = 1.0
-test_generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
+test_generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize,model_config_dict)
 test_generator = test_generator.to(device)
 
 test_generator.load_state_dict(torch.load( checkpoint_save_path+"/"+model_name+"_final_gen_"+str(args.epochs) +".pt"))

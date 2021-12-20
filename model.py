@@ -156,38 +156,89 @@ class G_deconv_bn_dr_relu_concat(nn.Module):
 
 class Generator(nn.Module):
     def __init__(self, h, w, img_channel , flow_channel , keep_prob ,
-     				image_mem_num , flow_mem_num , 
+     				image_mem_num , flow_mem_num , model_config_dict,
      				image_filters = 64, flow_filters = 64 ):
       super(Generator, self).__init__()
       filter_size = (4, 4) 
       flow_filter_size = (4, 4) 
-
+      self.model_config_dict = model_config_dict
       '''Unet ENCODER for FRAME'''
-      self.conv2d_Inception  = conv2d_Inception( image_filters, max_filter_size=7,in_channel=img_channel)
-      self.G_conv_bn_relu_1  = G_conv_bn_relu( image_filters , image_filters, filter_size, stride=1,  bn=False  , padding = (2,2), custom_padding= True )
-      self.G_conv_bn_relu_2  = G_conv_bn_relu( image_filters , image_filters*2, filter_size, stride=2,  bn=True , padding = (1,1) )
-      self.G_conv_bn_relu_3  = G_conv_bn_relu( image_filters*2 , image_filters*4, filter_size, stride=2,  bn=True  , padding = (1,1))
-      self.G_conv_bn_relu_4  = G_conv_bn_relu( image_filters*4 , image_filters*8, filter_size, stride=2,  bn=True  , padding = (1,1))
-      self.G_conv_bn_relu_flow_5  = G_conv_bn_relu( image_filters*8 , image_filters*8, filter_size, stride=2,  bn=True  , padding = (1,1))
+      self.conv2d_Inception        = conv2d_Inception( image_filters, max_filter_size=7,in_channel=img_channel)
+      self.G_conv_bn_relu_1        = G_conv_bn_relu( image_filters , image_filters, filter_size, stride=1,  bn=False  , padding = (2,2), custom_padding= True )
+      self.G_conv_bn_relu_2        = G_conv_bn_relu( image_filters , image_filters*2, filter_size, stride=2,  bn=True , padding = (1,1) )
+      self.G_conv_bn_relu_3        = G_conv_bn_relu( image_filters*2 , image_filters*4, filter_size, stride=2,  bn=True  , padding = (1,1))
+      self.G_conv_bn_relu_4        = G_conv_bn_relu( image_filters*4 , image_filters*8, filter_size, stride=2,  bn=True  , padding = (1,1))
+      self.G_conv_bn_relu_flow_5   = G_conv_bn_relu( image_filters*8 , image_filters*8, filter_size, stride=2,  bn=True  , padding = (1,1))
       self.G_conv_bn_relu_image_5  = G_conv_bn_relu( image_filters*8 , image_filters*8, filter_size, stride=2,  bn=True  , padding = (1,1))
-
+      #################################### FRAME DECODER CONFIG ####################################
       '''Unet DECODER for FRAME'''
-      self.G_deconv_bn_dr_relu_concat_frame1 =  G_deconv_bn_dr_relu_concat( image_filters*8 + image_filters*8 , image_filters*8, filter_size, keep_prob , padding = (1,1) )
-      self.G_deconv_bn_dr_relu_concat_frame2 =  G_deconv_bn_dr_relu_concat( image_filters*8 , image_filters*4, filter_size, keep_prob, padding = 1 )
-      self.G_deconv_bn_dr_relu_concat_frame3 =  G_deconv_bn_dr_relu_concat( image_filters*4 , image_filters*2, filter_size, keep_prob, padding = 1 )
-      self.G_deconv_bn_dr_relu_concat_frame4 =  G_deconv_bn_dr_relu_concat( image_filters*2 , image_filters  , filter_size, keep_prob, padding = 1 )
-      self.conv2d_frame1 = conv2d( image_filters , img_channel , filter_size=(3,3), stride=1 , padding = 1 , bias = True)
-
+      if self.model_config_dict["use_im_memory"]:
+        deconv_frame1_INPUTSIZE = image_filters*8 + image_filters*8 
+      else:
+        deconv_frame1_INPUTSIZE = image_filters*8 
+      self.G_deconv_bn_dr_relu_concat_frame1 =  G_deconv_bn_dr_relu_concat( deconv_frame1_INPUTSIZE , image_filters*8, filter_size, keep_prob , padding = (1,1) )
+      #################################### FRAME DECODER CONFIG ####################################
+      if self.model_config_dict["use_im_skipcon_1"]:
+        deconv_frame2_INPUTSIZE = image_filters*8 + image_filters*8 
+      else:
+        deconv_frame2_INPUTSIZE = image_filters*8 
+      self.G_deconv_bn_dr_relu_concat_frame2 =  G_deconv_bn_dr_relu_concat( deconv_frame2_INPUTSIZE , image_filters*4, filter_size, keep_prob, padding = 1 )
+      #---------------------------------------------------------------------------------------------
+      if self.model_config_dict["use_im_skipcon_2"]:
+        deconv_frame3_INPUTSIZE = image_filters*4 + image_filters*4
+      else:
+        deconv_frame3_INPUTSIZE = image_filters*4 
+      self.G_deconv_bn_dr_relu_concat_frame3 =  G_deconv_bn_dr_relu_concat( deconv_frame3_INPUTSIZE , image_filters*2, filter_size, keep_prob, padding = 1 )
+      #---------------------------------------------------------------------------------------------
+      if self.model_config_dict["use_im_skipcon_3"]:
+        deconv_frame2_INPUTSIZE = image_filters*2 + image_filters*2
+      else:
+        deconv_frame2_INPUTSIZE = image_filters*2
+      self.G_deconv_bn_dr_relu_concat_frame4 =  G_deconv_bn_dr_relu_concat( deconv_frame2_INPUTSIZE , image_filters  , filter_size, keep_prob, padding = 1 )
+      #---------------------------------------------------------------------------------------------
+      if self.model_config_dict["use_im_skipcon_4"]:
+        conv2d_frame1_INPUTSIZE = image_filters + image_filters
+      else:
+        conv2d_frame1_INPUTSIZE = image_filters
+      self.conv2d_frame1 = conv2d( conv2d_frame1_INPUTSIZE , img_channel , filter_size=(3,3), stride=1 , padding = 1 , bias = True)
+      #################################### FLOW DECODER CONFIG ####################################
       '''Unet DECODER for OPTICAL FLOW'''
       self.G_deconv_bn_dr_relu_concat_flow1 =  G_deconv_bn_dr_relu_concat( image_filters*8 , flow_filters*8  , flow_filter_size, keep_prob , padding = (1,1))
-      self.G_deconv_bn_dr_relu_concat_flow2 =  G_deconv_bn_dr_relu_concat( image_filters*8 + image_filters*8 , flow_filters*4  , flow_filter_size, keep_prob, padding = 1 )
-      self.G_deconv_bn_dr_relu_concat_flow3 =  G_deconv_bn_dr_relu_concat( flow_filters*4 + flow_filters*4  , flow_filters*2  , flow_filter_size, keep_prob, padding = 1 )
-      self.G_deconv_bn_dr_relu_concat_flow4 =  G_deconv_bn_dr_relu_concat( flow_filters*2 + flow_filters*2 , flow_filters    , flow_filter_size, keep_prob, padding = 1 )
-      self.conv2d_flow1 = conv2d( flow_filters + flow_filters   , flow_channel , filter_size=(3,3), stride=1 , padding = 1 , bias = True)      
-
-      self.local_image_memmodule = LOCAL_MemModule(mem_dim=image_mem_num, fea_dim=512, fea_num=8*12)
-      self.local_flow_memmodule = LOCAL_MemModule(mem_dim=flow_mem_num, fea_dim=512, fea_num=8*12)
-
+      if self.model_config_dict["use_flow_skipcon_1"]:
+        deconv_flow2_INPUTSIZE = flow_filters*8 + flow_filters*8 
+      else:
+        deconv_flow2_INPUTSIZE = flow_filters*8 
+      self.G_deconv_bn_dr_relu_concat_flow2 =  G_deconv_bn_dr_relu_concat( deconv_flow2_INPUTSIZE, flow_filters*4  , flow_filter_size, keep_prob, padding = 1 )
+      #---------------------------------------------------------------------------------------------
+      if self.model_config_dict["use_flow_skipcon_2"]:
+        deconv_flow3_INPUTSIZE = flow_filters*4 + flow_filters*4
+      else:
+        deconv_flow3_INPUTSIZE = flow_filters*4
+      self.G_deconv_bn_dr_relu_concat_flow3 =  G_deconv_bn_dr_relu_concat( deconv_flow3_INPUTSIZE , flow_filters*2  , flow_filter_size, keep_prob, padding = 1 )
+      #---------------------------------------------------------------------------------------------
+      if self.model_config_dict["use_flow_skipcon_3"]:
+        deconv_flow4_INPUTSIZE = flow_filters*2 + flow_filters*2
+      else:
+        deconv_flow4_INPUTSIZE = flow_filters*2
+      self.G_deconv_bn_dr_relu_concat_flow4 =  G_deconv_bn_dr_relu_concat( deconv_flow4_INPUTSIZE, flow_filters    , flow_filter_size, keep_prob, padding = 1 )
+      #---------------------------------------------------------------------------------------------
+      if self.model_config_dict["use_flow_skipcon_4"]:
+        conv2d_flow1_INPUTSIZE = flow_filters + flow_filters
+      else:
+        conv2d_flow1_INPUTSIZE = flow_filters
+      self.conv2d_flow1 = conv2d( conv2d_flow1_INPUTSIZE , flow_channel , filter_size=(3,3), stride=1 , padding = 1 , bias = True)      
+      #################################### MEMORY CONFIG ####################################
+      if self.model_config_dict["use_im_memory"]:
+        if self.model_config_dict["use_im_local_mem"]:
+          self.image_memmodule = LOCAL_MemModule(mem_dim=image_mem_num, fea_dim=512, fea_num=8*12)
+        else:
+          self.image_memmodule = GLOBAL_MemModule(mem_dim=flow_mem_num, fea_dim=512)
+      #---------------------------------------------------------------------------------------------
+      if self.model_config_dict["use_flow_memory"]:
+        if self.model_config_dict["use_flow_local_mem"]:
+          self.flow_memmodule = LOCAL_MemModule(mem_dim=flow_mem_num, fea_dim=512, fea_num=8*12)
+        else:
+          self.flow_memmodule = GLOBAL_MemModule(mem_dim=flow_mem_num, fea_dim=512)
 
     def image_encode(self, image):
       img_h0 = self.conv2d_Inception.forward(image)
@@ -200,25 +251,55 @@ class Generator(nn.Module):
 
       return img_h1 , img_h2 , img_h3 , img_h4 , img_h5 , flow_h5
     
-    def appearance_decode(self, h5):
+    def appearance_decode(self, img_h1, img_h2 , img_h3 , img_h4 , h5):
       ### FRAME DECODER
-      h4fr = self.G_deconv_bn_dr_relu_concat_frame1.forward(h5)
-      h3fr = self.G_deconv_bn_dr_relu_concat_frame2.forward(h4fr)
-      h2fr = self.G_deconv_bn_dr_relu_concat_frame3.forward(h3fr)
-      h1fr = self.G_deconv_bn_dr_relu_concat_frame4.forward(h2fr)
+      ############################################################
+      if self.model_config_dict["use_im_skipcon_1"]:
+        h4fr = self.G_deconv_bn_dr_relu_concat_frame1.forward(h5,img_h4)
+      else:
+        h4fr = self.G_deconv_bn_dr_relu_concat_frame1.forward(h5)
+      ############################################################
+      if self.model_config_dict["use_im_skipcon_2"]:
+        h3fr = self.G_deconv_bn_dr_relu_concat_frame2.forward(h4fr,img_h3)
+      else:
+        h3fr = self.G_deconv_bn_dr_relu_concat_frame2.forward(h4fr)
+      ############################################################
+      if self.model_config_dict["use_im_skipcon_3"]:
+        h2fr = self.G_deconv_bn_dr_relu_concat_frame3.forward(h3fr,img_h2)
+      else:
+        h2fr = self.G_deconv_bn_dr_relu_concat_frame3.forward(h3fr)
+      ############################################################
+      if self.model_config_dict["use_im_skipcon_4"]:
+        h1fr = self.G_deconv_bn_dr_relu_concat_frame4.forward(h2fr,img_h1)
+      else:  
+        h1fr = self.G_deconv_bn_dr_relu_concat_frame4.forward(h2fr)
+      ############################################################
       out_frame = self.conv2d_frame1(h1fr)
       return out_frame 
 
     def flow_decode(self , img_h1, img_h2 , img_h3 , img_h4 , img_h5 ):
       ### FLOW DECODER
-      h4fl = self.G_deconv_bn_dr_relu_concat_flow1.forward(img_h5,img_h4)
-      # h4fl = torch.cat( ( h4fl , img_h4 ) , dim = 1 )
-      h3fl = self.G_deconv_bn_dr_relu_concat_flow2.forward(h4fl,img_h3)
-      # h3fl = torch.cat( ( h3fl , img_h3 ) , dim = 1 )
-      h2fl = self.G_deconv_bn_dr_relu_concat_flow3.forward(h3fl,img_h2)
-      # h2fl = torch.cat( ( h2fl , img_h2 ) , dim = 1 )
-      h1fl = self.G_deconv_bn_dr_relu_concat_flow4.forward(h2fl,img_h1)
-      # h1fl = torch.cat( ( h1fl , img_h1 ) , dim = 1 )
+      ############################################################
+      if self.model_config_dict["use_flow_skipcon_1"]:
+        h4fl = self.G_deconv_bn_dr_relu_concat_flow1.forward(img_h5,img_h4)
+      else:
+        h4fl = self.G_deconv_bn_dr_relu_concat_flow1.forward(img_h5)
+      ############################################################
+      if self.model_config_dict["use_flow_skipcon_2"]:
+        h3fl = self.G_deconv_bn_dr_relu_concat_flow2.forward(h4fl,img_h3)
+      else:
+        h3fl = self.G_deconv_bn_dr_relu_concat_flow2.forward(h4fl)
+      ############################################################
+      if self.model_config_dict["use_flow_skipcon_3"]:
+        h2fl = self.G_deconv_bn_dr_relu_concat_flow3.forward(h3fl,img_h2)
+      else:
+        h2fl = self.G_deconv_bn_dr_relu_concat_flow3.forward(h3fl)
+      ############################################################
+      if self.model_config_dict["use_flow_skipcon_4"]:
+        h1fl = self.G_deconv_bn_dr_relu_concat_flow4.forward(h2fl,img_h1)
+      else:
+        h1fl = self.G_deconv_bn_dr_relu_concat_flow4.forward(h2fl)
+      ############################################################
       out_flow = self.conv2d_flow1(h1fl)
       return out_flow
 
@@ -226,11 +307,19 @@ class Generator(nn.Module):
       ### ENCODE
       img_h1 , img_h2 , img_h3 , img_h4 , img_h5 , flow_h5 = self.image_encode(image)
       ### MEM
-      local_fea_h5 = self.local_flow_memmodule(flow_h5)
-      local_image_fea_h5 = self.local_image_memmodule(img_h5)
-      image_fea_h5 = torch.cat( ( local_image_fea_h5 , img_h5 ) , dim = 1 )
+      if self.model_config_dict["use_im_memory"]:
+        image_fea_h5 = self.image_memmodule(img_h5)
+        image_fea_h5 = torch.cat( ( image_fea_h5 , img_h5 ) , dim = 1 )
+      else:
+        image_fea_h5 = flow_h5
+
+      if self.model_config_dict["use_im_memory"]:
+        flow_fea_h5 = self.flow_memmodule(flow_h5)
+      else:
+        flow_fea_h5 = flow_h5
+
       ### DECODER
-      out_flow = self.flow_decode(img_h1 ,img_h2 , img_h3 , img_h4 , local_fea_h5)
+      out_flow = self.flow_decode(img_h1 ,img_h2 , img_h3 , img_h4 , flow_fea_h5)
       out_frame  = self.appearance_decode( image_fea_h5)
       return out_flow, out_frame 
 

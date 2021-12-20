@@ -32,12 +32,22 @@ parser.add_argument('--eval_method', type=str, default='all', help=' all , norma
 parser.add_argument('--mag_quantile', type=float, default=0.99, help=' mag cut for custom method ')
 parser.add_argument('--min_flow_weight', type=float, default=0.1, help=' min flow weight in custom method ')
 parser.add_argument('--train_dropout', type=float, default=0.3, help=' train drop out')
-parser.add_argument('--weight_init', type=bool, default=True, help='normal distribution weight init')
-
-
+parser.add_argument('--weight_init', type=bool, default=True, help='normal distribution weight init') 
+######################################## MODEL CONFIG ##################################################
+parser.add_argument('--use_flow_local_mem', type=bool, default=True, help='use local mem or global mem for image decoder')
+parser.add_argument('--use_im_local_mem', type=bool, default=True, help='use local mem or global mem for flow decoder')
+parser.add_argument('--use_im_memory', type=bool, default=True, help='use mem for image decoder')
+parser.add_argument('--use_flow_memory', type=bool, default=True, help='use mem for flow decoder')
+parser.add_argument('--use_im_skipcon_1', type=bool, default=False, help='use skip con 1 for image decoder') 
+parser.add_argument('--use_im_skipcon_2', type=bool, default=False, help='use skip con 2 for image decoder') 
+parser.add_argument('--use_im_skipcon_3', type=bool, default=False, help='use skip con 3 for image decoder') 
+parser.add_argument('--use_im_skipcon_4', type=bool, default=False, help='use skip con 4 for image decoder') 
+parser.add_argument('--use_flow_skipcon_1', type=bool, default=True, help='use skip con 1 for flow decoder') 
+parser.add_argument('--use_flow_skipcon_2', type=bool, default=True, help='use skip con 2 for flow decoder') 
+parser.add_argument('--use_flow_skipcon_3', type=bool, default=True, help='use skip con 3 for flow decoder') 
+parser.add_argument('--use_flow_skipcon_4', type=bool, default=True, help='use skip con 4 for flow decoder') 
 
 args = parser.parse_args()
-
 
 if args.wandb_log:
   wandb.init(project=args.data_type,  name = args.wandb_run_name, 
@@ -60,7 +70,19 @@ if args.wandb_log:
             "min_flow_weight": args.min_flow_weight,
             "full_model_dir" : args.exp_dir +"/"+ args.data_type +"-"+ args.wandb_run_name +"/",
             "train_dropout" : args.train_dropout,
-            "weight_init" : args.weight_init
+            "weight_init" : args.weight_init,
+            "use_im_local_mem" : args.use_im_local_mem,
+            "use_flow_local_mem" : args.use_flow_local_mem,
+            "use_im_memory" : args.use_im_memory,
+            "use_flow_memory" : args.use_flow_memory,
+            "use_im_skipcon_1" : args.use_im_skipcon_1,
+            "use_im_skipcon_2" : args.use_im_skipcon_2,
+            "use_im_skipcon_3" : args.use_im_skipcon_3,
+            "use_im_skipcon_4" : args.use_im_skipcon_4,
+            "use_flow_skipcon_1" : args.use_flow_skipcon_1,
+            "use_flow_skipcon_2" : args.use_flow_skipcon_2,
+            "use_flow_skipcon_3" : args.use_flow_skipcon_3,
+            "use_flow_skipcon_4" : args.use_flow_skipcon_4,
           }
         ) # +"-"+str(time.ctime(int(time.time())) )
 
@@ -99,8 +121,23 @@ if args.weight_init:
   discriminator.apply(weights_init_memAE_git)
 discriminator.train()
 
+model_config_dict = {
+  "use_im_local_mem" : args.use_im_local_mem,
+  "use_flow_local_mem" : args.use_flow_local_mem,
+  "use_im_memory" : args.use_im_memory,
+  "use_flow_memory" : args.use_flow_memory,
+  "use_im_skipcon_1" : args.use_im_skipcon_1,
+  "use_im_skipcon_2" : args.use_im_skipcon_2,
+  "use_im_skipcon_3" : args.use_im_skipcon_3,
+  "use_im_skipcon_4" : args.use_im_skipcon_4,
+  "use_flow_skipcon_1" : args.use_flow_skipcon_1,
+  "use_flow_skipcon_2" : args.use_flow_skipcon_2,
+  "use_flow_skipcon_3" : args.use_flow_skipcon_3,
+  "use_flow_skipcon_4" : args.use_flow_skipcon_4,
+}
+
 p_keep = 1 - args.train_dropout
-generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize)
+generator = Generator(128,192,2,3,p_keep,args.im_msize,args.flow_msize, model_config_dict)
 
 generator = generator.to(device)
 if args.weight_init:

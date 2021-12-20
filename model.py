@@ -320,7 +320,7 @@ class Generator(nn.Module):
 
       ### DECODER
       out_flow = self.flow_decode(img_h1 ,img_h2 , img_h3 , img_h4 , flow_fea_h5)
-      out_frame  = self.appearance_decode( image_fea_h5)
+      out_frame  = self.appearance_decode( img_h1 ,img_h2 , img_h3 , img_h4 , image_fea_h5)
       return out_flow, out_frame 
 
 

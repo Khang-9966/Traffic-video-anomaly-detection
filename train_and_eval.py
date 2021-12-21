@@ -33,6 +33,7 @@ parser.add_argument('--mag_quantile', type=float, default=0.99, help=' mag cut f
 parser.add_argument('--min_flow_weight', type=float, default=0.1, help=' min flow weight in custom method ')
 parser.add_argument('--train_dropout', type=float, default=0.3, help=' train drop out')
 parser.add_argument('--weight_init', type=bool, default=True, help='normal distribution weight init') 
+parser.add_argument('--finalscore_maxnorm_byclip', type=bool, default=True, help='normal distribution weight init') 
 ######################################## MODEL CONFIG ##################################################
 parser.add_argument('--use_flow_local_mem', type=bool, default=True, help='use local mem or global mem for image decoder')
 parser.add_argument('--use_im_local_mem', type=bool, default=True, help='use local mem or global mem for flow decoder')
@@ -71,6 +72,7 @@ if args.wandb_log:
             "full_model_dir" : args.exp_dir +"/"+ args.data_type +"-"+ args.wandb_run_name +"/",
             "train_dropout" : args.train_dropout,
             "weight_init" : args.weight_init,
+            "finalscore_maxnorm_byclip" : args.finalscore_maxnorm_byclip,
             "use_im_local_mem" : args.use_im_local_mem,
             "use_flow_local_mem" : args.use_flow_local_mem,
             "use_im_memory" : args.use_im_memory,
@@ -250,7 +252,6 @@ for real_image,  real_flow  in Bar(train_loader):
   with torch.no_grad():
     plh_frame_true = real_image.float().to(device)
     plh_flow_true = real_flow.float().to(device)
-
     output_opt, output_appe   = test_generator(plh_frame_true,plh_flow_true)
 
 test_generator.eval()
@@ -275,7 +276,7 @@ print("Test len: ",len(raw_ground_truth))
 
 test_images , test_flows = load_raw_data(data_type=args.data_type,train_or_test="test",data_dir=args.dataset_path)
 
-test_sample_video_frame_index , test_index , labels_temp = get_index_sample_and_label(test_images,raw_ground_truth,args.data_type,INDEX_STEP,NUM_TEMPORAL_FRAME)
+test_sample_video_frame_index , test_index , labels_temp, video_index_label = get_index_sample_and_label(test_images,raw_ground_truth,args.data_type,INDEX_STEP,NUM_TEMPORAL_FRAME)
 
 test_image_list = []
 for index in tqdm.tqdm(test_sample_video_frame_index):
@@ -414,3 +415,10 @@ if args.eval_method == "all" or args.eval_method == "custom":
     wandb.log({"FlowAUC": roc_auc_score(labels_temp, max_flow_mean)})
     wandb.log({"FlowAP": average_precision_score(labels_temp, max_flow_mean) })
 
+if args.finalscore_maxnorm_byclip:
+  maxnorm_byclip = max_norm_score_by_clip(combine_max_score,video_index_label)
+  print("Combine maxperclip AUC: ",roc_auc_score(labels_temp, maxnorm_byclip))
+  print("Combine maxperclip AP: ",average_precision_score(labels_temp, maxnorm_byclip))
+  if args.wandb_log:
+    wandb.log({"MaxClipCombineAUC": roc_auc_score(labels_temp, maxnorm_byclip)})
+    wandb.log({"MaxClipCombineAP":  average_precision_score(labels_temp, maxnorm_byclip) })

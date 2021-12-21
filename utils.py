@@ -69,6 +69,7 @@ def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_
   index_list = []
   labels_temp = []
   label_count = 0
+  video_index_label = []
   for i in range(len(images)):
     if data_type == "ped2" :
         one_clip_labels = raw_ground_truth[i]
@@ -81,7 +82,7 @@ def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_
         sample_video_frame_index.append( video_index + [ j + k*INDEX_STEP for k in range(NUM_TEMPORAL_FRAME)  ]    )
         index_list.append(sample_count)
         sample_count += 1
-
+        video_index_label.append(j)
         if data_type == "ped2" :
             if j < one_clip_labels[1] and j >= one_clip_labels[0] - 1  :
                 labels_temp.append(1)
@@ -99,7 +100,7 @@ def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_
 
       label_count += 1
 
-  return sample_video_frame_index , index_list , labels_temp
+  return sample_video_frame_index , index_list , labels_temp, np.array(video_index_label)
   
 
 def get_index_sample(images,INDEX_STEP,NUM_TEMPORAL_FRAME,TRAIN_VAL_SPLIT=0):
@@ -221,3 +222,10 @@ def test_flow_vil(output_opt,real_flow,checkpoint_save_path,epoch):
   # except:
   fig.savefig(checkpoint_save_path+"/epoch_"+str(epoch)+"_train_flow.png")
 
+def max_norm_score_by_clip(combine_max_score,video_index_label):
+  max_video_combine_max_score = combine_max_score.copy()
+  for video_index in np.unique(video_index_label):
+    max_video_score = combine_max_score[np.where(video_index_label==video_index)[0]].max()
+    min_video_score = combine_max_score[np.where(video_index_label==video_index)[0]].min()
+    max_video_combine_max_score[np.where(video_index_label==video_index)[0]] = combine_max_score[np.where(video_index_label==video_index)[0]]/max_video_score
+  return max_video_combine_max_score

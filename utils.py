@@ -82,7 +82,7 @@ def get_index_sample_and_label(images,raw_ground_truth,data_type,INDEX_STEP,NUM_
         sample_video_frame_index.append( video_index + [ j + k*INDEX_STEP for k in range(NUM_TEMPORAL_FRAME)  ]    )
         index_list.append(sample_count)
         sample_count += 1
-        video_index_label.append(j)
+        video_index_label.append(i)
         if data_type == "ped2" :
             if j < one_clip_labels[1] and j >= one_clip_labels[0] - 1  :
                 labels_temp.append(1)
@@ -229,3 +229,4 @@ def max_norm_score_by_clip(combine_max_score,video_index_label):
     min_video_score = combine_max_score[np.where(video_index_label==video_index)[0]].min()
     max_video_combine_max_score[np.where(video_index_label==video_index)[0]] = combine_max_score[np.where(video_index_label==video_index)[0]]/max_video_score
   return max_video_combine_max_score
+

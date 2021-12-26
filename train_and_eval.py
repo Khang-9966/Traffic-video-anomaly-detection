@@ -30,7 +30,8 @@ parser.add_argument('--wandb_log', type=bool, default=False, help='Wandb ML ops 
 parser.add_argument('--wandb_run_name', type=str, default="test", help='Wandb ML ops monitor wandb_run_name')
 parser.add_argument('--eval_method', type=str, default='all', help=' all , normal , custom ')
 parser.add_argument('--mag_quantile', type=float, default=0.99, help=' mag cut for custom method ')
-parser.add_argument('--min_flow_weight', type=float, default=0.1, help=' min flow weight in custom method ')
+parser.add_argument('--min_flow_weight', type=float, default=0.3, help=' min flow weight in custom method ')
+parser.add_argument('--appe_score_weight', type=float, default=1.8, help=' min flow weight in custom method ')
 parser.add_argument('--train_dropout', type=float, default=0.3, help=' train drop out')
 parser.add_argument('--weight_init', type=bool, default=True, help='normal distribution weight init') 
 parser.add_argument('--finalscore_maxnorm_byclip', type=bool, default=True, help='normal distribution weight init') 
@@ -69,6 +70,7 @@ if args.wandb_log:
             "exp_dir": args.exp_dir,
             "mag_quantile": args.mag_quantile,
             "min_flow_weight": args.min_flow_weight,
+            "appe_score_weight": args.appe_score_weight,
             "full_model_dir" : args.exp_dir +"/"+ args.data_type +"-"+ args.wandb_run_name +"/",
             "train_dropout" : args.train_dropout,
             "weight_init" : args.weight_init,
@@ -352,6 +354,52 @@ if args.eval_method == "all" or args.eval_method == "custom":
   test_loader = DataLoader( test_data, batch_size=args.batch_size,
                                     shuffle=False, num_workers= args.num_workers_test )
 
+
+  train_loader = DataLoader( data_train, batch_size=BATCH_SIZE, 
+                                    shuffle=False, num_workers=1)
+
+  ######################## TRAIN #########################
+
+  diff_map_flow_list = []
+  diff_map_appe_list = []
+  mag_map_list = []
+
+  for real_image,  real_flow  in Bar(train_loader):
+
+    with torch.no_grad():
+      plh_frame_true = real_image.float().to(device)
+      plh_flow_true = real_flow.float().to(device)
+
+      output_opt, output_appe = test_generator(plh_frame_true,plh_flow_true)
+
+      output_appe = output_appe*0.5 + 0.5
+      plh_frame_true = plh_frame_true*0.5 + 0.5
+
+      diff_map_flow = (output_opt-plh_flow_true)**2
+      diff_map_appe = (output_appe-plh_frame_true)**2
+      
+      diff_map_flow = diff_map_flow.sum(1,keepdim=True)
+      diff_map_appe = diff_map_appe.sum(1,keepdim=True)
+      mag_map = plh_flow_true[:,-1:,:,:]
+
+      diff_map_flow = mean_kernel(diff_map_flow).squeeze().cpu().numpy().reshape(plh_frame_true.shape[0],-1)
+      diff_map_appe = mean_kernel(diff_map_appe).squeeze().cpu().numpy().reshape(plh_frame_true.shape[0],-1)
+      mag_map       = mean_kernel(mag_map).squeeze().cpu().numpy().reshape(plh_frame_true.shape[0],-1)
+
+      diff_map_flow_list += list(diff_map_flow)
+      diff_map_appe_list += list(diff_map_appe)
+      mag_map_list += list(mag_map)
+      #break
+
+  diff_map_flow_list = np.array(diff_map_flow_list)
+  diff_map_appe_list = np.array(diff_map_appe_list)
+  mag_map_list = np.array(mag_map_list)
+  max_train_mag = np.quantile(mag_map_list.reshape(-1),args.mag_quantile)
+  mean_train_flow = diff_map_flow_list.mean()
+  mean_train_appe = diff_map_appe_list.mean()
+
+
+  ######################### TEST #########################
   diff_map_flow_list = []
   diff_map_appe_list = []
   mag_map_list = []
@@ -387,11 +435,23 @@ if args.eval_method == "all" or args.eval_method == "custom":
   diff_map_appe_list = np.array(diff_map_appe_list)
   mag_map_list = np.array(mag_map_list)
 
-  norm_mag_map = score_norm(mag_map_list.reshape(-1), quantile= args.mag_quantile , output_min= args.min_flow_weight , output_max = 1 - args.min_flow_weight ).reshape( len(mag_map_list) ,-1)
-  norm_diff_map_flow = score_norm(diff_map_flow_list.reshape(-1), quantile=None, output_min=0 , output_max = 1 , log= True, max_value=100 ).reshape( len(diff_map_flow_list) ,-1)
-  norm_diff_map_appe = score_norm(diff_map_appe_list.reshape(-1), quantile=None, output_min=0 , output_max = 1 , log= True,  max_value=1 ).reshape( len(diff_map_appe_list) ,-1)
-  combine_score = norm_diff_map_flow*norm_mag_map + norm_diff_map_appe*(1-norm_mag_map)
-  combine_max_score = [ max(one_frame) for one_frame in combine_score]
+  diff_map_flow_list = np.array(diff_map_flow_list)/mean_train_flow
+  diff_map_appe_list = np.array(diff_map_appe_list)/mean_train_appe
+  
+  mag_map_list = np.array(mag_map_list)
+  mag_map_list = np.where(mag_map_list >= max_train_mag, max_train_mag , mag_map_list)
+  MAX_FLOW_IMPACT = 1-args.min_flow_weight
+  max_score = np.max(mag_map_list)
+  min_score = np.min(mag_map_list)
+  range_score = max_score-min_score
+  norm_mag_map = (mag_map_list-min_score)/range_score
+  norm_mag_map = norm_mag_map*(MAX_FLOW_IMPACT-(1-MAX_FLOW_IMPACT))+(1-MAX_FLOW_IMPACT)
+
+  norm_diff_map_flow = np.log(diff_map_flow_list)
+  norm_diff_map_appe = np.log(diff_map_appe_list)
+
+  combine_score = norm_diff_map_flow*norm_mag_map + args.appe_score_weight* norm_diff_map_appe*(1-norm_mag_map)
+  combine_max_score = np.array([ max(one_frame) for one_frame in combine_score])
 
   max_app_mean = [ max(one_frame) for one_frame in norm_diff_map_appe]
   max_flow_mean = [ max(one_frame) for one_frame in norm_diff_map_flow]
@@ -402,7 +462,7 @@ if args.eval_method == "all" or args.eval_method == "custom":
   print("Flow AUC: ",roc_auc_score(labels_temp, max_flow_mean))
   print("Flow AP: ",average_precision_score(labels_temp, max_flow_mean))
 
-  combine_max_score = normalize_maxmin_scores(combine_max_score)
+  #combine_max_score = normalize_maxmin_scores(combine_max_score)
 
   print("Combine AUC: ",roc_auc_score(labels_temp, combine_max_score))
   print("Combine AP: ",average_precision_score(labels_temp, combine_max_score))

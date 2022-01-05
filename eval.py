@@ -51,10 +51,7 @@ parser.add_argument('--use_flow_skipcon_4', type=bool, default=True, help='use s
 
 args = parser.parse_args()
 
-if args.wandb_log:
-  wandb.init(project=args.data_type,  name = args.wandb_run_name, 
-        entity="khang-9966",
-        config = {
+config_log = {
             "batchsize": args.batch_size,
             "epochs": args.epochs,
             "h": args.h,
@@ -88,6 +85,11 @@ if args.wandb_log:
             "use_flow_skipcon_3" : args.use_flow_skipcon_3,
             "use_flow_skipcon_4" : args.use_flow_skipcon_4,
           }
+print("config_log: ",config_log)
+if args.wandb_log:
+  wandb.init(project=args.data_type,  name = args.wandb_run_name, 
+        entity="khang-9966",
+        config = config_log
         ) # +"-"+str(time.ctime(int(time.time())) )
 
 NUM_TEMPORAL_FRAME = 2
@@ -139,6 +141,7 @@ model_config_dict = {
   "use_flow_skipcon_3" : args.use_flow_skipcon_3,
   "use_flow_skipcon_4" : args.use_flow_skipcon_4,
 }
+print("model_config_dict: ",model_config_dict)
 
 checkpoint_save_path = args.exp_dir +"/"+ args.data_type +"-"+ args.wandb_run_name +"/"
 

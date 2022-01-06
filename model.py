@@ -313,7 +313,7 @@ class Generator(nn.Module):
       else:
         image_fea_h5 = flow_h5
 
-      if self.model_config_dict["use_im_memory"]:
+      if self.model_config_dict["use_flow_memory"]:
         flow_fea_h5 = self.flow_memmodule(flow_h5)
       else:
         flow_fea_h5 = flow_h5

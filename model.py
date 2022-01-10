@@ -232,7 +232,7 @@ class Generator(nn.Module):
         if self.model_config_dict["use_im_local_mem"]:
           self.image_memmodule = LOCAL_MemModule(mem_dim=image_mem_num, fea_dim=512, fea_num=8*12)
         else:
-          self.image_memmodule = GLOBAL_MemModule(mem_dim=flow_mem_num, fea_dim=512)
+          self.image_memmodule = GLOBAL_MemModule(mem_dim=image_mem_num, fea_dim=512)
       #---------------------------------------------------------------------------------------------
       if self.model_config_dict["use_flow_memory"]:
         if self.model_config_dict["use_flow_local_mem"]:

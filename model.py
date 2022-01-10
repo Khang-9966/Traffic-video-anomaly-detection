@@ -239,7 +239,11 @@ class Generator(nn.Module):
           self.flow_memmodule = LOCAL_MemModule(mem_dim=flow_mem_num, fea_dim=512, fea_num=8*12)
         else:
           self.flow_memmodule = GLOBAL_MemModule(mem_dim=flow_mem_num, fea_dim=512)
+      print("flow_memmodule: ", self.flow_memmodule.memory.weight.shape)
+      print("image_memmodule: ", self.image_memmodule.memory.weight.shape)
 
+
+      
     def image_encode(self, image):
       img_h0 = self.conv2d_Inception.forward(image)
       img_h1 = self.G_conv_bn_relu_1.forward(img_h0)

@@ -110,7 +110,7 @@ flow_list = []
 for index in tqdm.tqdm(sample_video_frame_index):
   video_index = index[0]
   frame_index = index[1:]
-  flow_list.append(   np.transpose( np.array( [ train_flows[video_index][img_index] for img_index in frame_index[1:]  ] ) , (0,3,1,2)   ).reshape(2,128,192) )
+  flow_list.append(   np.transpose( np.array( [ train_flows[video_index][img_index] for img_index in frame_index[:1]  ] ) , (0,3,1,2)   ).reshape(2,128,192) )
 
 data_train =  loader(train_index,foreground_list,flow_list)
 
@@ -291,7 +291,7 @@ test_flow_list = []
 for index in tqdm.tqdm(test_sample_video_frame_index):
   video_index = index[0]
   frame_index = index[1:]
-  test_flow_list.append(   np.transpose( np.array( [ test_flows[video_index][img_index] for img_index in frame_index[1:]  ] ) , (0,3,1,2)   ).reshape(2,128,192) )
+  test_flow_list.append(   np.transpose( np.array( [ test_flows[video_index][img_index] for img_index in frame_index[:1]  ] ) , (0,3,1,2)   ).reshape(2,128,192) )
 
 test_data =  loader(test_index,test_image_list,test_flow_list)
 
